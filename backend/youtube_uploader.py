@@ -53,11 +53,14 @@ class YouTubeUploader:
         title: str,
         description: str,
         tags: list = None,
-        privacy_status: str = "private", # 'public', 'private', or 'unlisted'
-        client_secrets_path: Optional[str] = None
+        privacy_status: str = "public", # 'public', 'private', or 'unlisted'
+        client_secrets_path: Optional[str] = None,
+        publish_at: Optional[str] = None # ISO 8601 format e.g. "2026-11-18T10:30:00Z" for Scheduled Publishing
     ) -> Dict[str, Any]:
         """
         Uploads a rendered 9:16 video as a YouTube Short.
+        Supports YouTube Scheduled Publishing (publishAt) so videos go live automatically
+        even when user's PC is turned off!
         """
         if not os.path.exists(video_path):
             return {"status": "error", "message": f"Video file not found: {video_path}"}
@@ -80,6 +83,17 @@ class YouTubeUploader:
         try:
             youtube = cls.get_authenticated_service(secrets_file, token_file)
 
+            status_dict = {
+                "selfDeclaredMadeForKids": False
+            }
+
+            if publish_at:
+                # When scheduling in advance, YouTube requires privacyStatus to be "private"
+                status_dict["privacyStatus"] = "private"
+                status_dict["publishAt"] = publish_at
+            else:
+                status_dict["privacyStatus"] = privacy_status
+
             body = {
                 "snippet": {
                     "title": title[:100],
@@ -87,10 +101,7 @@ class YouTubeUploader:
                     "tags": tags,
                     "categoryId": "22" # People & Blogs or Entertainment
                 },
-                "status": {
-                    "privacyStatus": privacy_status,
-                    "selfDeclaredMadeForKids": False
-                }
+                "status": status_dict
             }
 
             media = MediaFileUpload(video_path, chunksize=-1, resumable=True, mimetype="video/mp4")
