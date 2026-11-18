@@ -520,7 +520,8 @@ export default function App() {
       <ExportModal
         isOpen={isExportOpen}
         onClose={() => setIsExportOpen(false)}
-        clip={lastRendered?.clip}
+        project={currentProject}
+        clip={lastRendered?.clip || activeClip}
         renderedUrl={lastRendered?.video_url}
         downloadUrls={lastRendered?.download_urls}
         aspectRatio={aspectRatio}

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import confetti from "canvas-confetti";
 import {
   Download,
@@ -9,12 +9,16 @@ import {
   ExternalLink,
   Layers,
   Sparkles,
-  X
+  X,
+  Upload,
+  Loader2,
+  AlertCircle
 } from "lucide-react";
 
 export default function ExportModal({
   isOpen,
   onClose,
+  project,
   clip,
   renderedUrl,
   downloadUrls = {},
@@ -23,6 +27,11 @@ export default function ExportModal({
   captionStyle
 }) {
   if (!isOpen) return null;
+
+  const [privacyStatus, setPrivacyStatus] = useState("private");
+  const [isUploading, setIsUploading] = useState(false);
+  const [youtubeResult, setYoutubeResult] = useState(null);
+  const [uploadError, setUploadError] = useState(null);
 
   const triggerConfetti = () => {
     confetti({
@@ -35,10 +44,45 @@ export default function ExportModal({
   React.useEffect(() => {
     if (isOpen) {
       triggerConfetti();
+      setYoutubeResult(null);
+      setUploadError(null);
     }
   }, [isOpen]);
 
   const videoDownloadUrl = downloadUrls.video || renderedUrl;
+
+  const handleUploadYouTube = async () => {
+    if (!project?.id || !clip?.id) {
+      setUploadError("Missing project or clip information.");
+      return;
+    }
+    setIsUploading(true);
+    setUploadError(null);
+    try {
+      const res = await fetch("/api/youtube/upload", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          project_id: project.id,
+          clip_id: clip.id,
+          privacy_status: privacyStatus,
+          title: clip?.packaging?.title,
+          description: clip?.packaging?.description,
+          tags: clip?.packaging?.tags
+        })
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.detail || "Failed to upload to YouTube");
+      }
+      setYoutubeResult(data);
+      confetti({ particleCount: 100, spread: 80 });
+    } catch (err) {
+      setUploadError(err.message || "Upload failed");
+    } finally {
+      setIsUploading(false);
+    }
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
@@ -137,6 +181,81 @@ export default function ExportModal({
                 <Sparkles className="w-4 h-4 text-amber-500" />
                 <span>ASS Styled</span>
               </a>
+            </div>
+
+            {/* YouTube Shorts Auto-Uploader Card */}
+            <div className="mt-4 p-4 rounded-2xl bg-gradient-to-br from-red-50 to-orange-50 border border-red-200 space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="w-6 h-6 rounded-lg bg-red-600 text-white flex items-center justify-center font-black text-xs shadow-sm">
+                    ▶
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-xs text-slate-900">Upload to YouTube Shorts</h4>
+                    <p className="text-[10px] text-slate-500">Official YouTube Data API v3 integration</p>
+                  </div>
+                </div>
+
+                {/* Privacy Status Dropdown */}
+                <select
+                  value={privacyStatus}
+                  onChange={(e) => setPrivacyStatus(e.target.value)}
+                  disabled={isUploading}
+                  className="px-2.5 py-1 text-xs font-semibold bg-white border border-red-200 text-slate-700 rounded-lg shadow-sm focus:outline-none focus:ring-1 focus:ring-red-500"
+                >
+                  <option value="private">🔒 Private</option>
+                  <option value="unlisted">🔗 Unlisted</option>
+                  <option value="public">🌐 Public</option>
+                </select>
+              </div>
+
+              {/* Upload Button */}
+              {!youtubeResult ? (
+                <button
+                  onClick={handleUploadYouTube}
+                  disabled={isUploading}
+                  className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-red-600 hover:bg-red-700 disabled:bg-red-400 text-white font-bold text-xs shadow-md shadow-red-600/25 transition-all cursor-pointer"
+                >
+                  {isUploading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span>Authenticating & Uploading to YouTube...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Upload className="w-4 h-4" />
+                      <span>1-Click Upload Short ({privacyStatus.toUpperCase()})</span>
+                    </>
+                  )}
+                </button>
+              ) : (
+                <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle className="w-4 h-4 text-emerald-600" />
+                    <div>
+                      <div className="text-xs font-bold text-emerald-900">Uploaded Successfully!</div>
+                      <div className="text-[10px] text-emerald-700">Video ID: {youtubeResult.video_id}</div>
+                    </div>
+                  </div>
+                  <a
+                    href={youtubeResult.video_url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex items-center gap-1 px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold shadow-sm transition-all"
+                  >
+                    <span>Watch Short</span>
+                    <ExternalLink className="w-3 h-3" />
+                  </a>
+                </div>
+              )}
+
+              {/* Error Message */}
+              {uploadError && (
+                <div className="p-2.5 bg-red-100/80 border border-red-200 rounded-xl flex items-start gap-2 text-xs text-red-800">
+                  <AlertCircle className="w-4 h-4 text-red-600 shrink-0 mt-0.5" />
+                  <div>{uploadError}</div>
+                </div>
+              )}
             </div>
           </div>
         </div>

@@ -19,6 +19,7 @@ from face_tracker import SmartFaceTracker
 from video_processor import VideoProcessor
 from stream_handler import StreamHandler
 from hinglish_converter import HinglishConverter
+from youtube_uploader import YouTubeUploader
 import sample_data
 
 logging.basicConfig(level=logging.INFO)
@@ -198,6 +199,14 @@ class BatchRenderRequest(BaseModel):
     resolution: str = "1080p"
     caption_style: str = "hormozi"
     remove_silence: bool = False
+
+class YouTubeUploadRequest(BaseModel):
+    project_id: str
+    clip_id: str
+    privacy_status: str = "private" # "public", "unlisted", "private"
+    title: Optional[str] = None
+    description: Optional[str] = None
+    tags: Optional[List[str]] = None
 
 class UpdateClipWordsRequest(BaseModel):
     project_id: str
@@ -761,6 +770,60 @@ def download_all_zip(project_id: str):
     res = batch_render(req)
     z_name = os.path.basename(res["zip_url"])
     return FileResponse(os.path.join(EXPORTS_DIR, z_name), filename=z_name, media_type="application/zip")
+
+@app.post("/api/youtube/upload")
+def upload_clip_to_youtube(req: YouTubeUploadRequest):
+    """Uploads a rendered short clip directly to YouTube Shorts via YouTube Data API v3"""
+    if req.project_id not in PROJECTS_DB:
+        raise HTTPException(status_code=404, detail="Project not found")
+
+    project = PROJECTS_DB[req.project_id]
+    clip = next((c for c in project["clips"] if c["id"] == req.clip_id), None)
+    if not clip:
+        raise HTTPException(status_code=404, detail="Clip not found")
+
+    # Find rendered video file
+    rendered_url = clip.get("rendered_video")
+    if not rendered_url:
+        candidates = [f for f in os.listdir(EXPORTS_DIR) if f.startswith(f"{req.project_id}_{req.clip_id}") and f.endswith(".mp4")]
+        if candidates:
+            rendered_url = f"/media/exports/{candidates[-1]}"
+        else:
+            raise HTTPException(status_code=400, detail="Clip has not been rendered yet. Please render/export the clip first.")
+
+    video_path = os.path.join(EXPORTS_DIR, os.path.basename(rendered_url))
+    if not os.path.exists(video_path):
+        raise HTTPException(status_code=404, detail=f"Rendered video file not found at {video_path}")
+
+    # Use packaging metadata or custom inputs
+    packaging = clip.get("packaging", {})
+    title = req.title or packaging.get("title") or f"{project.get('title', 'Clip')}"
+    description = req.description or packaging.get("description") or f"Clip from {project.get('title')}\n\n#Shorts #Viral"
+    tags = req.tags or packaging.get("tags") or ["#Shorts", "#Viral", "#Trending"]
+
+    secrets_path = os.path.join(BASE_DIR, "client_secret.json")
+    if not os.path.exists(secrets_path):
+        raise HTTPException(
+            status_code=400,
+            detail="Google OAuth2 client_secret.json is missing in backend directory. Please provide your Google Cloud OAuth client credentials."
+        )
+
+    res = YouTubeUploader.upload_short(
+        video_path=video_path,
+        title=title,
+        description=description,
+        tags=tags,
+        privacy_status=req.privacy_status,
+        client_secrets_path=secrets_path
+    )
+
+    if res.get("status") == "error":
+        raise HTTPException(status_code=500, detail=res.get("message", "YouTube upload failed"))
+
+    clip["youtube_url"] = res.get("video_url")
+    save_db()
+
+    return res
 
 if __name__ == "__main__":
     import uvicorn
