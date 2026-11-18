@@ -408,6 +408,7 @@ def main():
         "-c:v", "libx264", "-preset", "veryfast", "-crf", "20",
         "-b:v", "6M", "-maxrate", "10M", "-bufsize", "12M",
         "-c:a", "aac", "-b:a", "192k",
+        "-movflags", "+faststart",
         "-t", "35",
         rendered_video
     ]
