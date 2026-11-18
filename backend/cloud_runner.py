@@ -46,32 +46,40 @@ def main():
 
     logger.info(f"Slot {slot}: Selected Topic: '{query}' ({category})")
 
-    # 3. Search YouTube for top video using Android client to bypass bot check on datacenter IPs
-    search_cmd = [
-        "yt-dlp",
-        "--extractor-args", "youtube:player_client=android",
-        f"ytsearch1:{query}",
-        "--dump-json",
-        "--no-playlist"
-    ]
-    res = subprocess.run(search_cmd, stdout=subprocess.PIPE, text=True)
-    if res.returncode != 0 or not res.stdout.strip():
-        logger.error(f"Search failed for {query}")
+    # 3. Search YouTube for top video using OFFICIAL YouTube API (100% immune to bot-checks)
+    from googleapiclient.discovery import build
+    from google.oauth2.credentials import Credentials
+
+    creds = Credentials.from_authorized_user_file(token_file)
+    youtube = build("youtube", "v3", credentials=creds)
+
+    logger.info(f"Searching official YouTube API for: '{query}'...")
+    search_res = youtube.search().list(
+        q=query,
+        part="snippet",
+        type="video",
+        maxResults=1,
+        relevanceLanguage="en"
+    ).execute()
+
+    if not search_res.get("items"):
+        logger.error(f"No videos found via official API for {query}")
         sys.exit(1)
 
-    video_info = json.loads(res.stdout.strip().splitlines()[0])
-    yt_url = video_info.get("webpage_url") or video_info.get("original_url") or f"https://www.youtube.com/watch?v={video_info.get('id')}"
-    title = video_info.get("title", query)
-    logger.info(f"Target video found: {title} ({yt_url})")
+    item = search_res["items"][0]
+    vid = item["id"]["videoId"]
+    yt_url = f"https://www.youtube.com/watch?v={vid}"
+    title = item["snippet"]["title"]
+    logger.info(f"Target video found via Official API: {title} ({yt_url})")
 
-    # 4. Download first 70s segment
+    # 4. Download first 70s segment using iOS/Android client extractor
     os.makedirs(os.path.join(base_dir, "storage", "uploads"), exist_ok=True)
     os.makedirs(os.path.join(base_dir, "storage", "exports"), exist_ok=True)
     raw_video = os.path.join(base_dir, "storage", "uploads", f"cloud_{int(time.time())}.mp4")
 
     dl_cmd = [
         "yt-dlp",
-        "--extractor-args", "youtube:player_client=android",
+        "--extractor-args", "youtube:player_client=ios,android",
         "-f", "b/bv*+ba/best",
         "--download-sections", "*00:00:15-00:01:00",
         "--merge-output-format", "mp4",
