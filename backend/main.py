@@ -824,6 +824,67 @@ def upload_clip_to_youtube(req: YouTubeUploadRequest):
 
     return res
 
+# -------------------------------------------------------------
+# YouTube Authentication & AutoPilot 30-Minute Scheduler Endpoints
+# -------------------------------------------------------------
+@app.get("/api/youtube/status")
+def get_youtube_auth_status():
+    token_path = os.path.join(BASE_DIR, "youtube_token.json")
+    secrets_path = os.path.join(BASE_DIR, "client_secret.json")
+    is_authenticated = os.path.exists(token_path) and os.path.getsize(token_path) > 10
+    has_client_secret = os.path.exists(secrets_path)
+    return {
+        "authenticated": is_authenticated,
+        "has_client_secret": has_client_secret,
+        "token_file": "youtube_token.json" if is_authenticated else None
+    }
+
+@app.get("/api/youtube/auth-url")
+def get_youtube_auth_url():
+    secrets_path = os.path.join(BASE_DIR, "client_secret.json")
+    if not os.path.exists(secrets_path):
+        raise HTTPException(status_code=400, detail="client_secret.json not found in backend directory.")
+    try:
+        from google_auth_oauthlib.flow import InstalledAppFlow
+        flow = InstalledAppFlow.from_client_secrets_file(
+            secrets_path,
+            scopes=["https://www.googleapis.com/auth/youtube.upload", "https://www.googleapis.com/auth/youtube.readonly"],
+            redirect_uri="http://localhost:8080/"
+        )
+        auth_url, _ = flow.authorization_url(prompt='consent', access_type='offline')
+        return {"auth_url": auth_url}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+class StartAutoPilotRequest(BaseModel):
+    interval_minutes: int = 30
+    privacy_status: str = "public"
+
+class AddTopicRequest(BaseModel):
+    topic: str
+    category: str = "GTA 6"
+    hook: str = "GTA 6 JUST BROKE REALITY... 🤯"
+
+@app.get("/api/autopilot/status")
+def get_autopilot_status():
+    from autopilot import autopilot_service
+    return autopilot_service.get_status()
+
+@app.post("/api/autopilot/start")
+def start_autopilot(req: StartAutoPilotRequest):
+    from autopilot import autopilot_service
+    return autopilot_service.start(interval_minutes=req.interval_minutes, privacy_status=req.privacy_status)
+
+@app.post("/api/autopilot/stop")
+def stop_autopilot():
+    from autopilot import autopilot_service
+    return autopilot_service.stop()
+
+@app.post("/api/autopilot/add-topic")
+def add_autopilot_topic(req: AddTopicRequest):
+    from autopilot import autopilot_service
+    return autopilot_service.add_custom_topic(req.topic, category=req.category, hook=req.hook)
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)

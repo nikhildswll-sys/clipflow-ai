@@ -244,7 +244,7 @@ def generate_sample_mp4(output_path: str, duration: int = 65):
     cmd = [
         "ffmpeg", "-y",
         "-f", "lavfi", "-i", f"testsrc=duration={duration}:size=1920x1080:rate=30",
-        "-f", "lavfi", "-i", f"sine=frequency=440:duration={duration}",
+        "-f", "lavfi", "-i", f"anullsrc=channel_layout=stereo:sample_rate=44100",
         "-vf", "drawbox=x=0:y=0:w=1920:h=1080:color=black@0.6:t=fill",
         "-c:v", "libx264", "-preset", "ultrafast", "-crf", "24", "-pix_fmt", "yuv420p",
         "-c:a", "aac", "-b:a", "128k",

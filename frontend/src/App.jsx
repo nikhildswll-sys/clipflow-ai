@@ -19,6 +19,7 @@ import PackagingModal from "./components/PackagingModal";
 import ExportModal from "./components/ExportModal";
 import IngestModal from "./components/IngestModal";
 import WordEditorModal from "./components/WordEditorModal";
+import AutoPilotModal from "./components/AutoPilotModal";
 
 import {
   Sparkles,
@@ -55,6 +56,7 @@ export default function App() {
 
   // Modals & Drawers
   const [isIngestOpen, setIsIngestOpen] = useState(false);
+  const [isAutoPilotOpen, setIsAutoPilotOpen] = useState(false);
   const [isPackagingOpen, setIsPackagingOpen] = useState(false);
   const [isExportOpen, setIsExportOpen] = useState(false);
   const [isWordEditorOpen, setIsWordEditorOpen] = useState(false);
@@ -373,6 +375,7 @@ export default function App() {
         resolution={resolution}
         onSelectResolution={setResolution}
         onOpenIngest={() => setIsIngestOpen(true)}
+        onOpenAutoPilot={() => setIsAutoPilotOpen(true)}
         onBatchDownload={handleBatchDownload}
         isBatchRendering={isBatchRendering}
         totalClipsCount={currentProject?.clips?.length || 0}
@@ -535,6 +538,11 @@ export default function App() {
         onClose={() => setIsWordEditorOpen(false)}
         clip={activeClip}
         onSaveWords={handleSaveWords}
+      />
+
+      <AutoPilotModal
+        isOpen={isAutoPilotOpen}
+        onClose={() => setIsAutoPilotOpen(false)}
       />
     </div>
   );

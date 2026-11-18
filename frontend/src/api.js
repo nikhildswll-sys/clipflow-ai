@@ -94,3 +94,43 @@ export async function batchRender(payload) {
   if (!res.ok) throw new Error("Batch render failed");
   return res.json();
 }
+
+export async function fetchYouTubeStatus() {
+  const res = await fetch(`${API_BASE}/api/youtube/status`);
+  return res.json();
+}
+
+export async function fetchYouTubeAuthUrl() {
+  const res = await fetch(`${API_BASE}/api/youtube/auth-url`);
+  return res.json();
+}
+
+export async function fetchAutoPilotStatus() {
+  const res = await fetch(`${API_BASE}/api/autopilot/status`);
+  return res.json();
+}
+
+export async function startAutoPilot(intervalMinutes = 30, privacyStatus = "public") {
+  const res = await fetch(`${API_BASE}/api/autopilot/start`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ interval_minutes: intervalMinutes, privacy_status: privacyStatus })
+  });
+  return res.json();
+}
+
+export async function stopAutoPilot() {
+  const res = await fetch(`${API_BASE}/api/autopilot/stop`, {
+    method: "POST"
+  });
+  return res.json();
+}
+
+export async function addAutoPilotTopic(topic, category = "GTA 6", hook = "GTA 6 JUST BROKE REALITY... 🤯") {
+  const res = await fetch(`${API_BASE}/api/autopilot/add-topic`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ topic, category, hook })
+  });
+  return res.json();
+}

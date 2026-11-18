@@ -142,21 +142,91 @@ class StreamHandler:
     @classmethod
     def capture_live_stream_segment(cls, stream_url: str, output_path: str, duration_sec: int = 120) -> bool:
         """
-        Captures real-time live stream chunks (e.g. 120 seconds rolling buffer)
-        from HLS / m3u8 / RTMP / YouTube Live for instantaneous clipping!
+        Captures real-time live stream chunks (e.g. 60-120 seconds rolling buffer)
+        from HLS / m3u8 / RTMP / YouTube Live / Twitch for instantaneous clipping!
+        Fixes all buffering, timestamp desync, and audio beeping/stutter issues.
         """
-        cmd = [
-            "ffmpeg", "-y",
-            "-i", stream_url,
-            "-t", str(duration_sec),
-            "-c:v", "copy",
-            "-c:a", "copy",
-            output_path
-        ]
+        resolved_stream_url = stream_url.strip()
+        audio_stream_url = None
+
+        # 1. If it's a YouTube / Twitch / Web stream URL, resolve direct media manifests via yt-dlp
+        is_web_url = any(domain in resolved_stream_url.lower() for domain in ["youtube.com", "youtu.be", "twitch.tv", "kick.com"])
+        if is_web_url:
+            logger.info(f"Resolving live stream manifest with yt-dlp for {stream_url}...")
+            try:
+                g_cmd = [
+                    "yt-dlp",
+                    "-g",
+                    "-f", "bv*[height<=720]+ba/b[height<=720]/b",
+                    "--no-playlist",
+                    "--no-warnings",
+                    stream_url
+                ]
+                res = subprocess.run(g_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, timeout=25)
+                if res.returncode == 0 and res.stdout.strip():
+                    urls = [u.strip() for u in res.stdout.strip().splitlines() if u.strip().startswith("http")]
+                    if len(urls) == 1:
+                        resolved_stream_url = urls[0]
+                    elif len(urls) >= 2:
+                        resolved_stream_url = urls[0]
+                        audio_stream_url = urls[1]
+                    logger.info(f"Resolved direct stream manifest successfully.")
+            except Exception as e:
+                logger.warning(f"Could not resolve via yt-dlp -g: {e}")
+
+        # 2. Build robust FFmpeg capture command with audio re-encode to eliminate beeps & buffering
+        if audio_stream_url:
+            cmd = [
+                "ffmpeg", "-y",
+                "-reconnect", "1", "-reconnect_at_eof", "1", "-reconnect_streamed", "1", "-reconnect_delay_max", "5",
+                "-i", resolved_stream_url,
+                "-reconnect", "1", "-reconnect_at_eof", "1", "-reconnect_streamed", "1", "-reconnect_delay_max", "5",
+                "-i", audio_stream_url,
+                "-t", str(duration_sec),
+                "-avoid_negative_ts", "make_zero",
+                "-fflags", "+genpts+discardcorrupt",
+                "-c:v", "libx264", "-preset", "ultrafast", "-crf", "22",
+                "-c:a", "aac", "-b:a", "192k", "-ar", "44100",
+                output_path
+            ]
+        else:
+            cmd = [
+                "ffmpeg", "-y",
+                "-reconnect", "1", "-reconnect_at_eof", "1", "-reconnect_streamed", "1", "-reconnect_delay_max", "5",
+                "-i", resolved_stream_url,
+                "-t", str(duration_sec),
+                "-avoid_negative_ts", "make_zero",
+                "-fflags", "+genpts+discardcorrupt",
+                "-c:v", "libx264", "-preset", "ultrafast", "-crf", "22",
+                "-c:a", "aac", "-b:a", "192k", "-ar", "44100",
+                output_path
+            ]
+
         logger.info(f"Recording live stream segment ({duration_sec}s): {stream_url}")
         try:
-            subprocess.run(cmd, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=duration_sec + 30)
-            return os.path.exists(output_path)
+            subprocess.run(cmd, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=duration_sec + 45)
+            if os.path.exists(output_path) and os.path.getsize(output_path) > 10000:
+                logger.info(f"Live stream captured cleanly: {output_path} ({os.path.getsize(output_path)//1024} KB)")
+                return True
         except Exception as e:
-            logger.error(f"Live stream capture failed: {e}")
-            return False
+            logger.error(f"FFmpeg live capture failed: {e}")
+
+        # 3. Fallback: yt-dlp direct section download if FFmpeg live capture hit timeout
+        if is_web_url:
+            logger.info("Attempting direct yt-dlp clip buffer fallback...")
+            try:
+                ytdlp_cmd = [
+                    "yt-dlp",
+                    "-f", "bv*[height<=720]+ba/b[height<=720]/b",
+                    "--download-sections", f"*00:00:00-00:01:{min(59, duration_sec):02d}",
+                    "--no-playlist",
+                    "-o", output_path,
+                    stream_url
+                ]
+                subprocess.run(ytdlp_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=duration_sec + 30)
+                if os.path.exists(output_path) and os.path.getsize(output_path) > 10000:
+                    return True
+            except Exception as e:
+                logger.error(f"yt-dlp buffer fallback failed: {e}")
+
+        return False
