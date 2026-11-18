@@ -53,14 +53,27 @@ def main():
     creds = Credentials.from_authorized_user_file(token_file)
     youtube = build("youtube", "v3", credentials=creds)
 
-    logger.info(f"Searching official YouTube API for: '{query}'...")
+    search_query = f"{query} 4K"
+    logger.info(f"Searching official YouTube API for short viral clip: '{search_query}'...")
     search_res = youtube.search().list(
-        q=query,
+        q=search_query,
         part="snippet",
         type="video",
-        maxResults=1,
+        videoDuration="short",  # Under 4 minutes (action-packed, no boring intros)
+        order="viewCount",      # Highest views / most viral
+        maxResults=5,
         relevanceLanguage="en"
     ).execute()
+
+    if not search_res.get("items"):
+        # Fallback to general search without short filter if needed
+        search_res = youtube.search().list(
+            q=search_query,
+            part="snippet",
+            type="video",
+            maxResults=3,
+            relevanceLanguage="en"
+        ).execute()
 
     if not search_res.get("items"):
         logger.error(f"No videos found via official API for {query}")
@@ -83,8 +96,8 @@ def main():
             "--remote-components", "ejs:github",
             "--extractor-args", "youtubepot-bgutilhttp:base_url=http://127.0.0.1:4416",
             "--extractor-args", "youtube:player_client=android;player_skip=webpage,configs,initial_data",
-            "-f", "b/bv*+ba/best",
-            "--download-sections", "*00:00:15-00:01:00",
+            "-f", "bv*[height<=1080][ext=mp4]+ba[ext=m4a]/b[height<=1080][ext=mp4]/best",
+            "--download-sections", "*00:00:20-00:00:55",
             "--merge-output-format", "mp4",
             "-o", raw_video,
             yt_url
@@ -92,8 +105,8 @@ def main():
         [
             "yt-dlp",
             "--extractor-args", "youtube:player_client=tv_embedded,web_embedded",
-            "-f", "b/bv*+ba/best",
-            "--download-sections", "*00:00:15-00:01:00",
+            "-f", "bv*[height<=1080][ext=mp4]+ba[ext=m4a]/b[height<=1080][ext=mp4]/best",
+            "--download-sections", "*00:00:20-00:00:55",
             "--merge-output-format", "mp4",
             "-o", raw_video,
             yt_url
@@ -101,8 +114,8 @@ def main():
         [
             "yt-dlp",
             "--extractor-args", "youtube:player_client=ios,tv",
-            "-f", "b/bv*+ba/best",
-            "--download-sections", "*00:00:15-00:01:00",
+            "-f", "b/best",
+            "--download-sections", "*00:00:20-00:00:55",
             "--merge-output-format", "mp4",
             "-o", raw_video,
             yt_url
@@ -125,19 +138,33 @@ def main():
         from sample_data import generate_sample_mp4
         generate_sample_mp4(raw_video, duration=35)
 
-    # 5. Render 9:16 vertical Short
+    # 5. Render 9:16 vertical Full HD Short (Blur-Canvas Pro Layout)
     rendered_video = os.path.join(base_dir, "storage", "exports", f"short_{int(time.time())}.mp4")
     clean_hook = hook.replace("'", "").replace(":", "")
+
+    # Professional 9:16 canvas: Atmospheric blurred background + crisp 1080p center footage + bold viral title
+    filter_complex = (
+        "[0:v]split=2[bg][fg];"
+        "[bg]scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,boxblur=25:5[blurred_bg];"
+        "[fg]scale=1080:-1:flags=lanczos[scaled_fg];"
+        "[blurred_bg][scaled_fg]overlay=(W-w)/2:(H-h)/2[base_canvas];"
+        f"[base_canvas]drawtext=text='{clean_hook}':x=(w-text_w)/2:y=230:fontsize=46:fontcolor=white:borderw=4:bordercolor=black:shadowcolor=black@0.8:shadowx=3:shadowy=3[final_v]"
+    )
+
     render_cmd = [
         "ffmpeg", "-y",
         "-i", raw_video,
-        "-vf", f"crop=ih*(9/16):ih,scale=1080:1920:flags=lanczos,drawtext=text='{clean_hook}':x=(w-text_w)/2:y=180:fontsize=44:fontcolor=white:box=1:boxcolor=red@0.9:boxborderw=18",
-        "-c:v", "libx264", "-preset", "ultrafast", "-crf", "22",
+        "-filter_complex", filter_complex,
+        "-map", "[final_v]",
+        "-map", "0:a?",
+        "-c:v", "libx264", "-preset", "fast", "-crf", "18",
+        "-b:v", "8M", "-maxrate", "12M", "-bufsize", "16M",
         "-c:a", "aac", "-b:a", "192k",
+        "-t", "38",
         rendered_video
     ]
     subprocess.run(render_cmd, check=True)
-    logger.info(f"Rendered 9:16 Short: {rendered_video}")
+    logger.info(f"Rendered 9:16 Full HD Short: {rendered_video}")
 
     # 6. Upload to YouTube Shorts
     from youtube_uploader import YouTubeUploader

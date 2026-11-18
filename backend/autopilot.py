@@ -20,27 +20,28 @@ class AutoPilotService:
     """
 
     DEFAULT_TOPICS = [
-        # GTA 6 Viral Topic Queue (Massive CTR & Trending)
-        {"category": "GTA 6", "topic": "GTA 6 leaked gameplay insane physics and graphics details", "hook": "GTA 6 JUST BROKE REALITY... 🤯"},
-        {"category": "GTA 6", "topic": "GTA 6 Vice City map comparison size vs GTA 5 secret locations", "hook": "THE MAP IS 3X BIGGER THAN GTA 5 🗺️"},
-        {"category": "GTA 6", "topic": "GTA 6 Lucia and Jason story mystery breakdown", "hook": "THE DARK TRUTH ABOUT JASON & LUCIA 💀"},
-        {"category": "GTA 6", "topic": "GTA 6 hyper realistic police AI and NPC reaction leaks", "hook": "THIS POLICE AI IS TERRIFYING... 🚨"},
-        {"category": "GTA 6", "topic": "Rockstar Games secret detail in GTA 6 trailer nobody saw", "hook": "LOOK AT WHAT ROCKSTAR HID HERE... 🔍"},
+        # GTA 6 Next-Gen Spectacles (Highest Search Volume)
+        {"category": "GTA 6", "topic": "GTA 6 4K realistic graphics and physics details", "hook": "GTA 6 GRAPHICS ARE BEYOND REALITY... 🤯"},
+        {"category": "GTA 6", "topic": "GTA 6 Vice City night lights 4K gameplay trailer", "hook": "VICE CITY AT NIGHT LOOKS INCREDIBLE 🌴"},
+        {"category": "GTA 6", "topic": "GTA 6 insane water physics and beach details 4k", "hook": "THIS WATER PHYSICS IS UNREAL 🌊"},
+        {"category": "GTA 6", "topic": "GTA 6 police chase AI behavior trailer details", "hook": "HOW GTA 6 POLICE WILL HUNT YOU 🚨"},
+        {"category": "GTA 6", "topic": "GTA 6 car crashes and damage physics comparison 4k", "hook": "GTA 6 CRASH PHYSICS LEAKED 💥"},
 
-        # Sci-Fi & Universe Mysteries (High Retention)
-        {"category": "Sci-Fi", "topic": "James Webb telescope discovered impossible giant structure in deep space", "hook": "NASA DIDN'T EXPECT TO FIND THIS... 🔭"},
-        {"category": "Sci-Fi", "topic": "Black hole time dilation paradox explained simply", "hook": "1 HOUR HERE IS 7 YEARS ON EARTH ⏳"},
-        {"category": "Sci-Fi", "topic": "Scientist explains why we definitely live in a simulation", "hook": "THE GLITCH IN REALITY EXPOSED 👁️"},
-        {"category": "Sci-Fi", "topic": "Voyager 1 received mysterious signal from outside solar system", "hook": "WHAT VOYAGER HEARD IN DEEP SPACE 🛸"},
+        # Sci-Fi & Cosmic Phenomena (Insane Visuals & Wonder)
+        {"category": "Sci-Fi", "topic": "James Webb telescope deep space 4K discovery visualization", "hook": "JAMES WEBB CAPTURED THIS IN DEEP SPACE 🔭"},
+        {"category": "Sci-Fi", "topic": "black hole accretion disk 4K simulation interstellar", "hook": "WHAT HAPPENS INSIDE A BLACK HOLE? 🕳️"},
+        {"category": "Sci-Fi", "topic": "scale of the universe 3D 4k mind blowing", "hook": "HOW TINY ARE WE REALLY? 🌌"},
+        {"category": "Sci-Fi", "topic": "solar storm hits earth 4k simulation nasa", "hook": "WHAT A SOLAR STORM DOES TO EARTH ⚡"},
+        {"category": "Sci-Fi", "topic": "future mars colony 4K realistic simulation", "hook": "LIFE ON MARS IN 2050 🚀"},
 
-        # Mind-Blowing AI & Tech Disclosures
-        {"category": "AI & Tech", "topic": "Humanoid robot agility and AI consciousness debate", "hook": "THEY ARE ALREADY FASTER THAN HUMANS 🤖"},
-        {"category": "AI & Tech", "topic": "Neuralink patient controls computer with brain thoughts", "hook": "TELEPATHY IS ACTUALLY REAL NOW 🧠"},
-        {"category": "AI & Tech", "topic": "Quantum computers breaking all encryption codes in minutes", "hook": "EVERY PASSWORD COULD BE USELESS SOON 💻"},
+        # Mind-Blowing Robotics & Cyberpunk Tech
+        {"category": "Future Tech", "topic": "Boston Dynamics Atlas robot parkour agility 4K", "hook": "ROBOTS ARE GETTING TOO FAST... 🤖"},
+        {"category": "Future Tech", "topic": "cyberpunk humanoid robot realistic facial expression", "hook": "THIS ROBOT LOOKS TOO REAL 😳"},
+        {"category": "Future Tech", "topic": "unreal engine 5 hyper realistic graphics gameplay 4k", "hook": "IS THIS REAL LIFE OR A GAME? 🎮"},
 
-        # Psychology & Crazy Real Secrets
-        {"category": "Mind Secrets", "topic": "Dark psychology tricks casino use to make you lose money", "hook": "THE DIRTY CASINO TRICK NOBODY KNOWS 🎰"},
-        {"category": "Mind Secrets", "topic": "Dopamine detox neurological transformation after 7 days", "hook": "HOW REWIRING YOUR BRAIN CHANGES EVERYTHING ⚡"}
+        # Deep Earth & Ocean Wonders
+        {"category": "Mysteries", "topic": "deep ocean terrifying creatures 4K NOAA discovery", "hook": "ALIEN CREATURES IN THE DEEP SEA 🌊"},
+        {"category": "Mysteries", "topic": "Bermuda triangle mystery ocean satellite discovery", "hook": "SECRET BEHIND BERMUDA TRIANGLE ⚓"}
     ]
 
     def __init__(self, interval_seconds: int = 1800, privacy_status: str = "public"):

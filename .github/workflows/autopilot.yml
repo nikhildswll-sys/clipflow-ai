@@ -25,15 +25,13 @@ jobs:
         with:
           deno-version: v2.x
 
-      - name: Install System Dependencies (FFmpeg & Fonts)
+      - name: Fast System & Fonts Setup
         run: |
-          sudo apt-get update
-          sudo apt-get install -y ffmpeg fonts-dejavu-core
+          sudo apt-get install -y --no-install-recommends fonts-dejavu-core
 
       - name: Install Python Packages
         run: |
-          python -m pip install --upgrade pip
-          pip install --upgrade "yt-dlp[default]" bgutil-ytdlp-pot-provider google-api-python-client google-auth-oauthlib google-auth
+          pip install --no-cache-dir yt-dlp bgutil-ytdlp-pot-provider google-api-python-client google-auth-oauthlib google-auth
 
       - name: Setup Cloudflare WARP (Bypass Cloud Datacenter Bot Checks)
         uses: fscarmen/warp-on-actions@v1.4
