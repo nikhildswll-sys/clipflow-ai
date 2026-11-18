@@ -127,36 +127,30 @@ def main():
 
     search_query = f"{query} -#shorts -shorts"
     logger.info(f"Searching official YouTube API for full long-form video (16:9): '{search_query}'...")
-    search_res = youtube.search().list(
-        q=search_query,
-        part="snippet",
-        type="video",
-        videoDuration="medium",  # 4 to 20 minutes
-        order="viewCount",      # Highest views / most viral
-        maxResults=10
-    ).execute()
+    
+    search_res = None
+    query_candidates = [
+        search_query,
+        f"{' '.join(query.split()[:4])} -#shorts",
+        f"{category} gameplay 4K -#shorts"
+    ]
+    for q_cand in query_candidates:
+        try:
+            res = youtube.search().list(
+                q=q_cand,
+                part="snippet",
+                type="video",
+                order="viewCount",
+                maxResults=10
+            ).execute()
+            if res.get("items"):
+                search_res = res
+                logger.info(f"Found {len(res['items'])} candidate videos using: '{q_cand}'")
+                break
+        except Exception as e:
+            logger.warning(f"Search notice for '{q_cand}': {e}")
 
-    if not search_res.get("items"):
-        # Fallback to longer videos (>20 mins podcasts/documentaries) if needed
-        search_res = youtube.search().list(
-            q=search_query,
-            part="snippet",
-            type="video",
-            videoDuration="long",
-            order="viewCount",
-            maxResults=10
-        ).execute()
-
-    if not search_res.get("items"):
-        search_res = youtube.search().list(
-            q=search_query,
-            part="snippet",
-            type="video",
-            order="relevance",
-            maxResults=10
-        ).execute()
-
-    if not search_res.get("items"):
+    if not search_res or not search_res.get("items"):
         logger.error(f"No videos found via official API for {query}")
         sys.exit(1)
 
