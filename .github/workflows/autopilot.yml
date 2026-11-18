@@ -25,8 +25,11 @@ jobs:
         with:
           deno-version: v2.x
 
-      - name: Verify FFmpeg
-        run: ffmpeg -version
+      - name: Install FFmpeg & Fonts
+        timeout-minutes: 2
+        run: |
+          sudo DEBIAN_FRONTEND=noninteractive apt-get update -qq
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends ffmpeg fonts-dejavu-core
 
       - name: Install Python Packages
         timeout-minutes: 3
