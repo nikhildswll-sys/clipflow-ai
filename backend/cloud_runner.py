@@ -354,19 +354,19 @@ def main():
         rel_ass = ass_rel_path.replace("\\", "/")
         filter_complex = (
             "[0:v]split=2[bg][fg];"
-            "[bg]scale=120:213,boxblur=5:1,scale=1080:1920:flags=bilinear[blurred_bg];"
-            "[fg]scale=1080:-1:flags=lanczos[scaled_fg];"
-            "[blurred_bg][scaled_fg]overlay=(W-w)/2:(H-h)/2[base_canvas];"
-            f"[base_canvas]drawtext=text='{clean_hook}':x=(w-text_w)/2:y=230:fontsize=46:fontcolor=white:borderw=4:bordercolor=black:shadowcolor=black@0.8:shadowx=3:shadowy=3[canvas_with_hook];"
-            f"[canvas_with_hook]ass={rel_ass}:fontsdir=fonts[final_v]"
+            "[bg]scale=120:213,boxblur=5:1,scale=1080:1920:flags=bilinear,setsar=1[blurred_bg];"
+            "[fg]scale=1080:-1:flags=lanczos,setsar=1[scaled_fg];"
+            "[blurred_bg][scaled_fg]overlay=(W-w)/2:(H-h)/2,setsar=1[base_canvas];"
+            f"[base_canvas]drawtext=text='{clean_hook}':x=(w-text_w)/2:y=230:fontsize=46:fontcolor=white:borderw=4:bordercolor=black:shadowcolor=black@0.8:shadowx=3:shadowy=3,setsar=1[canvas_with_hook];"
+            f"[canvas_with_hook]ass={rel_ass}:fontsdir=fonts,setsar=1[final_v]"
         )
     else:
         filter_complex = (
             "[0:v]split=2[bg][fg];"
-            "[bg]scale=120:213,boxblur=5:1,scale=1080:1920:flags=bilinear[blurred_bg];"
-            "[fg]scale=1080:-1:flags=lanczos[scaled_fg];"
-            "[blurred_bg][scaled_fg]overlay=(W-w)/2:(H-h)/2[base_canvas];"
-            f"[base_canvas]drawtext=text='{clean_hook}':x=(w-text_w)/2:y=230:fontsize=46:fontcolor=white:borderw=4:bordercolor=black:shadowcolor=black@0.8:shadowx=3:shadowy=3[final_v]"
+            "[bg]scale=120:213,boxblur=5:1,scale=1080:1920:flags=bilinear,setsar=1[blurred_bg];"
+            "[fg]scale=1080:-1:flags=lanczos,setsar=1[scaled_fg];"
+            "[blurred_bg][scaled_fg]overlay=(W-w)/2:(H-h)/2,setsar=1[base_canvas];"
+            f"[base_canvas]drawtext=text='{clean_hook}':x=(w-text_w)/2:y=230:fontsize=46:fontcolor=white:borderw=4:bordercolor=black:shadowcolor=black@0.8:shadowx=3:shadowy=3,setsar=1[final_v]"
         )
 
     render_cmd = [
@@ -375,6 +375,7 @@ def main():
         "-filter_complex", filter_complex,
         "-map", "[final_v]",
         "-map", "0:a?",
+        "-aspect", "9:16",
         "-c:v", "libx264", "-preset", "veryfast", "-crf", "20",
         "-b:v", "6M", "-maxrate", "10M", "-bufsize", "12M",
         "-c:a", "aac", "-b:a", "192k",
