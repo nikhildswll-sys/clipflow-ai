@@ -41,14 +41,6 @@ jobs:
           docker run --name bgutil-provider -d -p 4416:4416 brainicism/bgutil-ytdlp-pot-provider:latest
           sleep 5
 
-      - name: Setup Cloudflare WARP (Bypass Cloud Datacenter Bot Checks)
-        continue-on-error: true
-        timeout-minutes: 2
-        uses: fscarmen/warp-on-actions@v1.4
-        with:
-          stack: dual
-          mode: wireguard
-
       - name: Run Cloud AutoPilot Clipper & Uploader
         env:
           CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
