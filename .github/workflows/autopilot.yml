@@ -25,11 +25,15 @@ jobs:
         with:
           deno-version: v2.x
 
-      - name: Install FFmpeg & Fonts
-        timeout-minutes: 2
+      - name: Setup FFmpeg
+        uses: FedericoCarboni/setup-ffmpeg@v3
+        with:
+          ffmpeg-version: release
+
+      - name: Setup Fonts
         run: |
-          sudo DEBIAN_FRONTEND=noninteractive apt-get update -qq
-          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends ffmpeg fonts-dejavu-core
+          mkdir -p backend/fonts
+          wget -q https://raw.githubusercontent.com/google/fonts/main/ofl/montserrat/Montserrat-Black.ttf -O backend/fonts/Montserrat-Black.ttf || true
 
       - name: Install Python Packages
         timeout-minutes: 3
