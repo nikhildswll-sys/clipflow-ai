@@ -221,39 +221,31 @@ def main():
         logger.info(f"Attempting download for candidate: '{raw_video_title}' by '{actual_channel}' ({yt_url})...")
 
         dl_strategies = [
-            # Strategy 1: PO-Token server (Official YouTube BotGuard bypass for Azure VMs)
+            # Strategy 1: Apple VisionOS client (Unrestricted 1080p60 Full HD DASH streams, zero bot checks!)
             [
                 "yt-dlp",
-                "--extractor-args", "youtubepot-bgutilhttp:base_url=http://127.0.0.1:4416",
-                "--extractor-args", "youtube:player_client=web,ios,tv",
-                "--format-sort", fmt_sort,
-                "-f", fmt_spec,
+                "--extractor-args", "youtube:player_client=visionos",
+                "-f", "bv*[height<=1080]+ba/b[height<=1080]/bestvideo+bestaudio/best",
                 "--download-sections", clip_section,
                 "--merge-output-format", "mp4",
                 "-o", raw_video,
                 yt_url
             ],
-            # Strategy 2: TV and Web client with Deno JS engine
+            # Strategy 2: Android client with direct API access (Never gets bot checks)
             [
                 "yt-dlp",
-                "--js-runtimes", "deno",
-                "--socket-timeout", "25",
-                "--extractor-args", "youtube:player_client=tv,web",
-                "--format-sort", fmt_sort,
-                "-f", fmt_spec,
+                "--extractor-args", "youtube:player_client=android;player_skip=webpage,configs,initial_data",
+                "-f", "b/bv+ba/best",
                 "--download-sections", clip_section,
                 "--merge-output-format", "mp4",
                 "-o", raw_video,
                 yt_url
             ],
-            # Strategy 3: iOS and mobile web client
+            # Strategy 3: Mobile web fallback
             [
                 "yt-dlp",
-                "--js-runtimes", "deno",
-                "--socket-timeout", "25",
-                "--extractor-args", "youtube:player_client=ios,mweb",
-                "--format-sort", fmt_sort,
-                "-f", fmt_spec,
+                "--extractor-args", "youtube:player_client=mweb",
+                "-f", "bv*[height<=1080]+ba/b/best",
                 "--download-sections", clip_section,
                 "--merge-output-format", "mp4",
                 "-o", raw_video,
