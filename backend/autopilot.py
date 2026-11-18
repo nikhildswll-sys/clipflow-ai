@@ -20,29 +20,42 @@ class AutoPilotService:
     """
 
     DEFAULT_TOPICS = [
-        # GTA 6 Next-Gen Spectacles (Highest Search Volume)
-        {"category": "GTA 6", "topic": "GTA 6 4K realistic graphics and physics details", "hook": "GTA 6 GRAPHICS ARE BEYOND REALITY... 🤯"},
-        {"category": "GTA 6", "topic": "GTA 6 Vice City night lights 4K gameplay trailer", "hook": "VICE CITY AT NIGHT LOOKS INCREDIBLE 🌴"},
-        {"category": "GTA 6", "topic": "GTA 6 insane water physics and beach details 4k", "hook": "THIS WATER PHYSICS IS UNREAL 🌊"},
-        {"category": "GTA 6", "topic": "GTA 6 police chase AI behavior trailer details", "hook": "HOW GTA 6 POLICE WILL HUNT YOU 🚨"},
-        {"category": "GTA 6", "topic": "GTA 6 car crashes and damage physics comparison 4k", "hook": "GTA 6 CRASH PHYSICS LEAKED 💥"},
+        # --- 1. GTA 6 Viral Wave (Indian Gamers & Global Leaks / Graphics / Physics) ---
+        {"category": "GTA 6", "topic": "GTA 6 realistic police AI behavior and car crash deformation physics 4K", "hook": "THIS POLICE AI IS TERRIFYING... 🚨", "slice": "*00:01:15-00:01:50"},
+        {"category": "GTA 6", "topic": "GTA 6 Vice City graphics comparison vs real life Miami 4K gameplay", "hook": "VICE CITY VS REAL LIFE 🌴", "slice": "*00:01:30-00:02:05"},
+        {"category": "GTA 6", "topic": "GTA 6 map size comparison vs GTA 5 secret locations breakdown", "hook": "THE MAP IS 3X BIGGER THAN GTA 5 🗺️", "slice": "*00:01:20-00:01:55"},
+        {"category": "GTA 6", "topic": "GTA 6 Lucia and Jason story mystery dark secrets gameplay breakdown", "hook": "THE DARK TRUTH OF JASON & LUCIA 💀", "slice": "*00:01:40-00:02:15"},
+        {"category": "GTA 6", "topic": "GTA 6 2 billion dollar budget why Rockstar took 12 years documentary", "hook": "THE $2,000,000,000 VIDEO GAME 💰", "slice": "*00:01:30-00:02:05"},
+        {"category": "GTA 6", "topic": "GTA 6 water physics beach wave simulation and NPC reactions 4k", "hook": "THIS WATER PHYSICS IS UNREAL 🌊", "slice": "*00:01:25-00:02:00"},
+        {"category": "GTA 6", "topic": "GTA 6 weapon mechanics gore and shooting physics leaked gameplay breakdown", "hook": "GTA 6 GUNPLAY DETAILS LEAKED 💥", "slice": "*00:01:10-00:01:45"},
 
-        # Sci-Fi, Cosmic & Mind-Blowing Voice Explainers (High Retention Speech Captions)
-        {"category": "Sci-Fi", "topic": "James Webb telescope deep space 4K discovery visualization", "hook": "JAMES WEBB CAPTURED THIS IN DEEP SPACE 🔭"},
-        {"category": "Sci-Fi", "topic": "black hole accretion disk 4K simulation interstellar", "hook": "WHAT HAPPENS INSIDE A BLACK HOLE? 🕳️"},
-        {"category": "Sci-Fi", "topic": "scale of the universe 3D 4k mind blowing", "hook": "HOW TINY ARE WE REALLY? 🌌"},
-        {"category": "Sci-Fi", "topic": "solar storm hits earth 4k simulation nasa", "hook": "WHAT A SOLAR STORM DOES TO EARTH ⚡"},
-        {"category": "Sci-Fi", "topic": "future mars colony 4K realistic simulation", "hook": "LIFE ON MARS IN 2050 🚀"},
+        # --- 2. High-Retention Podcasts (Indian & Global Speech / Animated Captions) ---
+        {"category": "Podcast", "topic": "Ranveer Allahbadia BeerBiceps secret ancient temple mystery breakdown", "hook": "THE SECRET OF ANCIENT TEMPLES 🕉️", "slice": "*00:02:00-00:02:35"},
+        {"category": "Podcast", "topic": "Raj Shamani podcast cyber security expert how hackers tap your phone", "hook": "HOW THEY ARE SPYING ON YOUR PHONE 📱", "slice": "*00:01:45-00:02:20"},
+        {"category": "Podcast", "topic": "Joe Rogan Neil deGrasse Tyson what happens inside black hole time dilation", "hook": "TIME STOPS INSIDE A BLACK HOLE ⏳", "slice": "*00:01:30-00:02:05"},
+        {"category": "Podcast", "topic": "Joe Rogan Lex Fridman artificial intelligence superintelligence singularity warning", "hook": "AI WILL SURPASS HUMAN INTELLIGENCE 🤖", "slice": "*00:01:50-00:02:25"},
+        {"category": "Podcast", "topic": "Andrew Huberman dopamine reset rewire brain science protocol", "hook": "HOW TO REWIRE YOUR BRAIN IN 48 HOURS ⚡", "slice": "*00:02:10-00:02:45"},
+        {"category": "Podcast", "topic": "Neil deGrasse Tyson explains simulation theory mind blowing interview", "hook": "ARE WE LIVING IN A SIMULATION? 👁️", "slice": "*00:01:35-00:02:10"},
 
-        # Mind-Blowing Science & Philosophy Voice Clips
-        {"category": "Mind Secrets", "topic": "Neil deGrasse Tyson explains simulation theory mind blowing short", "hook": "ARE WE LIVING IN A SIMULATION? 👁️"},
-        {"category": "Sci-Fi", "topic": "Joe Rogan scientist explains black hole time dilation simply", "hook": "TIME STOPS INSIDE A BLACK HOLE ⏳"},
-        {"category": "Future Tech", "topic": "Boston Dynamics Atlas robot parkour agility 4K", "hook": "ROBOTS ARE GETTING TOO FAST... 🤖"},
-        {"category": "Future Tech", "topic": "cyberpunk humanoid robot realistic facial expression", "hook": "THIS ROBOT LOOKS TOO REAL 😳"},
+        # --- 3. Sci-Fi & Cosmic Mysteries (Insane Visuals & Mind Expansion) ---
+        {"category": "Sci-Fi", "topic": "James Webb telescope discovered impossible massive structure in deep space visualization", "hook": "NASA DIDNT EXPECT TO FIND THIS 🔭", "slice": "*00:01:40-00:02:15"},
+        {"category": "Sci-Fi", "topic": "black hole accretion disk 4K simulation interstellar crossing event horizon", "hook": "WHAT HAPPENS INSIDE A BLACK HOLE? 🕳️", "slice": "*00:01:20-00:01:55"},
+        {"category": "Sci-Fi", "topic": "scale of the universe 3D 4k mind blowing cosmic comparison", "hook": "HOW TINY ARE WE REALLY? 🌌", "slice": "*00:01:15-00:01:50"},
+        {"category": "Sci-Fi", "topic": "solar superstorm Carrington event hitting modern earth simulation NASA", "hook": "WHAT A SOLAR STORM DOES TO EARTH ⚡", "slice": "*00:01:30-00:02:05"},
+        {"category": "Sci-Fi", "topic": "future mars colony 2050 4K realistic simulation life in space", "hook": "LIFE ON MARS IN 2050 🚀", "slice": "*00:01:25-00:02:00"},
 
-        # Deep Earth & Ocean Wonders
-        {"category": "Mysteries", "topic": "deep ocean terrifying creatures 4K NOAA discovery", "hook": "ALIEN CREATURES IN THE DEEP SEA 🌊"},
-        {"category": "Mysteries", "topic": "Bermuda triangle mystery ocean satellite discovery", "hook": "SECRET BEHIND BERMUDA TRIANGLE ⚓"}
+        # --- 4. History & Ancient Mysteries (Indian & World) ---
+        {"category": "History", "topic": "Kailash Temple rock-cut architecture mystery carved top to bottom impossible engineering", "hook": "IMPOSSIBLE ANCIENT ENGINEERING 🏛️", "slice": "*00:01:50-00:02:25"},
+        {"category": "History", "topic": "deadly curse of the Kohinoor Diamond every king who possessed it documentary", "hook": "THE DEADLY CURSE OF KOHINOOR 💎", "slice": "*00:02:00-00:02:35"},
+        {"category": "History", "topic": "Indus Valley Civilization script mystery why nobody can decode it", "hook": "THE UNDECODED ANCIENT SCRIPT 📜", "slice": "*00:01:35-00:02:10"},
+        {"category": "History", "topic": "Great Pyramid of Giza secret chambers and Orion constellation alignment documentary", "hook": "WHAT LIES INSIDE THE PYRAMIDS? 🔍", "slice": "*00:01:45-00:02:20"},
+        {"category": "History", "topic": "lost city of Atlantis underwater satellite scan discovery mystery", "hook": "SECRET BEHIND ATLANTIS DISCOVERY ⚓", "slice": "*00:01:30-00:02:05"},
+
+        # --- 5. Kids & Curiosity Wonders (Prehistoric, Animals & Deep Earth) ---
+        {"category": "Wonders", "topic": "asteroid impact simulation that wiped out dinosaurs 66 million years ago 4K", "hook": "THE DAY THE ASTEROID HIT EARTH ☄️", "slice": "*00:01:20-00:01:55"},
+        {"category": "Wonders", "topic": "Megalodon vs Blue Whale scale comparison terror of prehistoric oceans 3D", "hook": "THE BIGGEST PREDATOR IN HISTORY 🦈", "slice": "*00:01:15-00:01:50"},
+        {"category": "Wonders", "topic": "deep sea Mariana Trench terrifying creatures surviving extreme pressure NOAA", "hook": "ALIEN CREATURES IN THE DEEP SEA 🌊", "slice": "*00:01:30-00:02:05"},
+        {"category": "Wonders", "topic": "immortal jellyfish Turritopsis dohrnii reverses its age forever science", "hook": "THE ANIMAL THAT NEVER DIES 🪼", "slice": "*00:01:25-00:02:00"}
     ]
 
     def __init__(self, interval_seconds: int = 1800, privacy_status: str = "public"):

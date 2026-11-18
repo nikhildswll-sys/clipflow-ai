@@ -53,26 +53,36 @@ def main():
     creds = Credentials.from_authorized_user_file(token_file)
     youtube = build("youtube", "v3", credentials=creds)
 
-    search_query = f"{query} 4K"
-    logger.info(f"Searching official YouTube API for short viral clip: '{search_query}'...")
+    search_query = f"{query} -#shorts -shorts"
+    logger.info(f"Searching official YouTube API for full long-form video (16:9): '{search_query}'...")
     search_res = youtube.search().list(
         q=search_query,
         part="snippet",
         type="video",
-        videoDuration="short",  # Under 4 minutes (action-packed, no boring intros)
+        videoDuration="medium",  # 4 to 20 minutes (Full horizontal long-form videos!)
         order="viewCount",      # Highest views / most viral
-        maxResults=5,
-        relevanceLanguage="en"
+        maxResults=5
     ).execute()
 
     if not search_res.get("items"):
-        # Fallback to general search without short filter if needed
+        # Fallback to longer videos (>20 mins podcasts/documentaries) if needed
         search_res = youtube.search().list(
             q=search_query,
             part="snippet",
             type="video",
-            maxResults=3,
-            relevanceLanguage="en"
+            videoDuration="long",
+            order="viewCount",
+            maxResults=5
+        ).execute()
+
+    if not search_res.get("items"):
+        # Final general search if specific duration yields zero
+        search_res = youtube.search().list(
+            q=search_query,
+            part="snippet",
+            type="video",
+            order="relevance",
+            maxResults=5
         ).execute()
 
     if not search_res.get("items"):
@@ -85,10 +95,13 @@ def main():
     title = item["snippet"]["title"]
     logger.info(f"Target video found via Official API: {title} ({yt_url})")
 
-    # 4. Download segment or use mirror fallback if datacenter IP is blocked
+    # 4. Download segment from the meat of the long video
     os.makedirs(os.path.join(base_dir, "storage", "uploads"), exist_ok=True)
     os.makedirs(os.path.join(base_dir, "storage", "exports"), exist_ok=True)
     raw_video = os.path.join(base_dir, "storage", "uploads", f"cloud_{int(time.time())}.mp4")
+
+    clip_section = topic_item.get("slice", "*00:01:30-00:02:05")
+    logger.info(f"Slicing punchy 35-second moment from full long video: {clip_section}")
 
     dl_strategies = [
         [
@@ -97,7 +110,7 @@ def main():
             "--extractor-args", "youtubepot-bgutilhttp:base_url=http://127.0.0.1:4416",
             "--extractor-args", "youtube:player_client=android,web",
             "-f", "bv*[height<=1080]+ba/b[height<=1080]/best",
-            "--download-sections", "*00:00:20-00:00:55",
+            "--download-sections", clip_section,
             "--merge-output-format", "mp4",
             "-o", raw_video,
             yt_url
@@ -108,7 +121,7 @@ def main():
             "--extractor-args", "youtubepot-bgutilhttp:base_url=http://127.0.0.1:4416",
             "--extractor-args", "youtube:player_client=android;player_skip=webpage,configs,initial_data",
             "-f", "bv*[height<=1080]+ba/b[height<=1080]/best",
-            "--download-sections", "*00:00:20-00:00:55",
+            "--download-sections", clip_section,
             "--merge-output-format", "mp4",
             "-o", raw_video,
             yt_url
@@ -118,7 +131,7 @@ def main():
             "--remote-components", "ejs:github",
             "--extractor-args", "youtube:player_client=web,android",
             "-f", "bv*[height<=1080]+ba/b[height<=1080]/best",
-            "--download-sections", "*00:00:20-00:00:55",
+            "--download-sections", clip_section,
             "--merge-output-format", "mp4",
             "-o", raw_video,
             yt_url
