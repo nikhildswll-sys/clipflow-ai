@@ -226,11 +226,10 @@ def main():
     fmt_spec = "bestvideo[height>=720]+bestaudio/best[height>=720]"
 
     dl_strategies = [
-        # Strategy 1: PO-Token server + web,tv clients (Pristine 1080p/720p)
+        # Strategy 1: Web and TV clients with official Deno JS solver (1080p/720p)
         [
             "yt-dlp",
             "--remote-components", "ejs:github",
-            "--extractor-args", "youtubepot-bgutilhttp:base_url=http://127.0.0.1:4416",
             "--extractor-args", "youtube:player_client=web,tv",
             "--format-sort", fmt_sort,
             "-f", fmt_spec,
@@ -239,11 +238,10 @@ def main():
             "-o", raw_video,
             yt_url
         ],
-        # Strategy 2: PO-Token server + web_creator client (Bypasses bot checks, 1080p/720p)
+        # Strategy 2: Web creator client with Deno (Bypasses bot checks, 1080p/720p)
         [
             "yt-dlp",
             "--remote-components", "ejs:github",
-            "--extractor-args", "youtubepot-bgutilhttp:base_url=http://127.0.0.1:4416",
             "--extractor-args", "youtube:player_client=web_creator,tv",
             "--format-sort", fmt_sort,
             "-f", fmt_spec,
@@ -252,11 +250,11 @@ def main():
             "-o", raw_video,
             yt_url
         ],
-        # Strategy 3: Web client with Deno JS engine
+        # Strategy 3: iOS and mobile web client
         [
             "yt-dlp",
             "--remote-components", "ejs:github",
-            "--extractor-args", "youtube:player_client=web,tv",
+            "--extractor-args", "youtube:player_client=ios,mweb",
             "--format-sort", fmt_sort,
             "-f", fmt_spec,
             "--download-sections", clip_section,
