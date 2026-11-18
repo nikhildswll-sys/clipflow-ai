@@ -76,128 +76,157 @@ def main():
                 return True
         return False
 
-    if mode in ["stream_only", "gta6_only"]:
-        logger.info("🎮 GTA 6 ALL-DAY STREAM SNIPER ACTIVE: Targeting Top Indian & Global Streamers!")
-        stream_pool = getattr(service, "GTA6_STREAM_TOPICS", service.topics)
-        unseen_pool = [t for t in stream_pool if not is_already_uploaded(t)]
-        if unseen_pool:
-            logger.info(f"Anti-duplicate filter: {len(unseen_pool)} unseen streamer topics available.")
-            topic_item = random.choice(unseen_pool)
-        else:
-            logger.info("All streamer topics used recently; cycling pool.")
-            topic_item = random.choice(stream_pool)
-    else:
-        # Default smart mix: 60% GTA 6 (Streamers + Viral Game Mechanics), 40% Podcasts / Sci-Fi / History / Wonders
-        category_weights = {
-            "GTA 6 Stream": 0.35,
-            "GTA 6": 0.25,
-            "Podcast": 0.15,
-            "Sci-Fi": 0.10,
-            "History": 0.10,
-            "Wonders": 0.05
-        }
-        all_pool = list(getattr(service, "GTA6_STREAM_TOPICS", [])) + list(service.topics)
-        dedup_pool = []
-        seen_t = set()
-        for t in all_pool:
-            if t["topic"] not in seen_t:
-                seen_t.add(t["topic"])
-                dedup_pool.append(t)
-
-        try:
-            available_cats = list(category_weights.keys())
-            weights = [category_weights[c] for c in available_cats]
-            chosen_cat = random.choices(available_cats, weights=weights, k=1)[0]
-            cat_topics = [t for t in dedup_pool if t.get("category") == chosen_cat]
-            unseen_cat = [t for t in cat_topics if not is_already_uploaded(t)]
-            if unseen_cat:
-                topic_item = random.choice(unseen_cat)
-            elif cat_topics:
-                topic_item = random.choice(cat_topics)
-            else:
-                topic_item = random.choice(dedup_pool)
-        except Exception as e:
-            logger.warning(f"Selection fallback: {e}. Picking uniform topic.")
-            topic_item = random.choice(dedup_pool)
-
-    query = topic_item["topic"]
-    target_streamer = topic_item.get("streamer")
-    category = topic_item.get("category", "GTA 6")
-    base_hook = topic_item.get("hook", "WAIT FOR IT... 🤯")
-
-    logger.info(f"Targeting: '{query}' | Target Streamer: '{target_streamer}' | Category: '{category}'")
-
-    search_query = f"{query} -#shorts -shorts"
-    logger.info(f"Searching official YouTube API for full long-form video (16:9): '{search_query}'...")
-    
-    search_res = None
-    query_candidates = [
-        f"{query} gameplay",
-        query,
-        f"{' '.join(query.split()[:4])}",
-        f"{category} full walkthrough 1080p"
-    ]
-    for q_cand in query_candidates:
-        try:
-            # 1. First priority: Medium duration videos (4 to 20 minutes)
-            res = youtube.search().list(
-                q=q_cand,
-                part="snippet",
-                type="video",
-                videoDuration="medium",
-                order="viewCount",
-                maxResults=10
-            ).execute()
-            if res.get("items"):
-                search_res = res
-                logger.info(f"Found {len(res['items'])} medium duration candidate videos using: '{q_cand}'")
-                break
-
-            # 2. Second priority: Long duration videos (>20 minutes full stream/podcast)
-            res = youtube.search().list(
-                q=q_cand,
-                part="snippet",
-                type="video",
-                videoDuration="long",
-                order="viewCount",
-                maxResults=10
-            ).execute()
-            if res.get("items"):
-                search_res = res
-                logger.info(f"Found {len(res['items'])} long duration candidate videos using: '{q_cand}'")
-                break
-        except Exception as e:
-            logger.warning(f"Search notice for '{q_cand}': {e}")
-
-    if not search_res or not search_res.get("items"):
-        logger.error(f"No videos found via official API for {query}")
-        sys.exit(1)
-
-    # Bulletproof Streamer Verification & Video Candidates Selection
+    target_vid_override = os.environ.get("TARGET_VIDEO_ID", "").strip()
     candidate_items = []
-    if target_streamer:
-        s_name = target_streamer.lower()
-        s_parts = [p for p in s_name.split() if len(p) > 3]
+
+    if target_vid_override:
+        logger.info(f"Targeting SPECIFIC requested video/stream ID: {target_vid_override}")
+        v_res = youtube.videos().list(id=target_vid_override, part="snippet").execute()
+        if v_res.get("items"):
+            item_raw = v_res["items"][0]
+            actual_ch = item_raw["snippet"].get("channelTitle", "TGG").strip()
+            topic_item = {
+                "topic": item_raw["snippet"].get("title", f"{actual_ch} Plays GTA 6"),
+                "category": "GTA 6 Stream",
+                "streamer": actual_ch,
+                "slice": "*00:03:00-00:03:35",
+                "hook": f"{actual_ch.upper()} PLAYS GTA 6 🔥"
+            }
+            chosen_item = {
+                "id": {"videoId": target_vid_override},
+                "snippet": item_raw["snippet"],
+                "_streamer_verified": True
+            }
+            candidate_items = [chosen_item]
+            query = topic_item["topic"]
+            target_streamer = actual_ch
+            category = "GTA 6 Stream"
+            base_hook = topic_item["hook"]
+        else:
+            logger.error(f"Target video ID '{target_vid_override}' not found on YouTube.")
+            sys.exit(1)
+    else:
+        if mode in ["stream_only", "gta6_only"]:
+            logger.info("🎮 GTA 6 ALL-DAY STREAM SNIPER ACTIVE: Targeting Top Indian & Global Streamers!")
+            stream_pool = getattr(service, "GTA6_STREAM_TOPICS", service.topics)
+            unseen_pool = [t for t in stream_pool if not is_already_uploaded(t)]
+            if unseen_pool:
+                logger.info(f"Anti-duplicate filter: {len(unseen_pool)} unseen streamer topics available.")
+                topic_item = random.choice(unseen_pool)
+            else:
+                logger.info("All streamer topics used recently; cycling pool.")
+                topic_item = random.choice(stream_pool)
+        else:
+            # Default smart mix: 60% GTA 6 (Streamers + Viral Game Mechanics), 40% Podcasts / Sci-Fi / History / Wonders
+            category_weights = {
+                "GTA 6 Stream": 0.35,
+                "GTA 6": 0.25,
+                "Podcast": 0.15,
+                "Sci-Fi": 0.10,
+                "History": 0.10,
+                "Wonders": 0.05
+            }
+            all_pool = list(getattr(service, "GTA6_STREAM_TOPICS", [])) + list(service.topics)
+            dedup_pool = []
+            seen_t = set()
+            for t in all_pool:
+                if t["topic"] not in seen_t:
+                    seen_t.add(t["topic"])
+                    dedup_pool.append(t)
+
+            try:
+                available_cats = list(category_weights.keys())
+                weights = [category_weights[c] for c in available_cats]
+                chosen_cat = random.choices(available_cats, weights=weights, k=1)[0]
+                cat_topics = [t for t in dedup_pool if t.get("category") == chosen_cat]
+                unseen_cat = [t for t in cat_topics if not is_already_uploaded(t)]
+                if unseen_cat:
+                    topic_item = random.choice(unseen_cat)
+                elif cat_topics:
+                    topic_item = random.choice(cat_topics)
+                else:
+                    topic_item = random.choice(dedup_pool)
+            except Exception as e:
+                logger.warning(f"Selection fallback: {e}. Picking uniform topic.")
+                topic_item = random.choice(dedup_pool)
+
+        query = topic_item["topic"]
+        target_streamer = topic_item.get("streamer")
+        category = topic_item.get("category", "GTA 6")
+        base_hook = topic_item.get("hook", "WAIT FOR IT... 🤯")
+
+        logger.info(f"Targeting: '{query}' | Target Streamer: '{target_streamer}' | Category: '{category}'")
+
+        search_query = f"{query} -#shorts -shorts"
+        logger.info(f"Searching official YouTube API for full long-form video (16:9): '{search_query}'...")
+        
+        search_res = None
+        query_candidates = [
+            f"{query} gameplay",
+            query,
+            f"{' '.join(query.split()[:4])}",
+            f"{category} full walkthrough 1080p"
+        ]
+        for q_cand in query_candidates:
+            try:
+                # 1. First priority: Medium duration videos (4 to 20 minutes)
+                res = youtube.search().list(
+                    q=q_cand,
+                    part="snippet",
+                    type="video",
+                    videoDuration="medium",
+                    order="viewCount",
+                    maxResults=10
+                ).execute()
+                if res.get("items"):
+                    search_res = res
+                    logger.info(f"Found {len(res['items'])} medium duration candidate videos using: '{q_cand}'")
+                    break
+
+                # 2. Second priority: Long duration videos (>20 minutes full stream/podcast)
+                res = youtube.search().list(
+                    q=q_cand,
+                    part="snippet",
+                    type="video",
+                    videoDuration="long",
+                    order="viewCount",
+                    maxResults=10
+                ).execute()
+                if res.get("items"):
+                    search_res = res
+                    logger.info(f"Found {len(res['items'])} long duration candidate videos using: '{q_cand}'")
+                    break
+            except Exception as e:
+                logger.warning(f"Search notice for '{q_cand}': {e}")
+
+        if not search_res or not search_res.get("items"):
+            logger.error(f"No videos found via official API for {query}")
+            sys.exit(1)
+
+        # Bulletproof Streamer Verification & Video Candidates Selection
+        if target_streamer:
+            s_name = target_streamer.lower()
+            s_parts = [p for p in s_name.split() if len(p) > 3]
+            for it in search_res.get("items", []):
+                v_id = it["id"].get("videoId", "")
+                if any(v_id in rt for rt in recent_titles):
+                    continue
+                ch_title = it["snippet"].get("channelTitle", "").lower()
+                v_title = it["snippet"].get("title", "").lower()
+                if (s_name in ch_title or s_name in v_title) or any(p in ch_title or p in v_title for p in s_parts):
+                    it["_streamer_verified"] = True
+                    candidate_items.append(it)
+
         for it in search_res.get("items", []):
             v_id = it["id"].get("videoId", "")
             if any(v_id in rt for rt in recent_titles):
                 continue
-            ch_title = it["snippet"].get("channelTitle", "").lower()
-            v_title = it["snippet"].get("title", "").lower()
-            if (s_name in ch_title or s_name in v_title) or any(p in ch_title or p in v_title for p in s_parts):
-                it["_streamer_verified"] = True
+            if it not in candidate_items:
+                it["_streamer_verified"] = False
                 candidate_items.append(it)
 
-    for it in search_res.get("items", []):
-        v_id = it["id"].get("videoId", "")
-        if any(v_id in rt for rt in recent_titles):
-            continue
-        if it not in candidate_items:
-            it["_streamer_verified"] = False
-            candidate_items.append(it)
-
-    if not candidate_items:
-        candidate_items = search_res.get("items", [])[:5]
+        if not candidate_items:
+            candidate_items = search_res.get("items", [])[:5]
 
     # 4. Download segment from the meat of the long video (Strict 1080p / 720p HD)
     os.makedirs(os.path.join(base_dir, "storage", "uploads"), exist_ok=True)
@@ -231,12 +260,12 @@ def main():
         logger.info(f"Attempting download for candidate: '{raw_video_title}' by '{actual_channel}' ({yt_url})...")
 
         dl_strategies = [
-            # Strategy 1: Apple VisionOS client (Unrestricted 1080p60 Full HD DASH streams)
+            # Strategy 1: Apple VisionOS client (Unrestricted 1080p60 Full HD DASH streams + HLS live)
             [
                 "yt-dlp",
                 *proxy_cmd,
                 "--extractor-args", "youtube:player_client=visionos",
-                "-f", "bv*[height<=1080]+ba/b[height<=1080]/bestvideo+bestaudio/best",
+                "-f", "312+234/311+234/bv*[height<=1080]+ba/b[height<=1080]/bestvideo+bestaudio/best",
                 "--download-sections", clip_section,
                 "--merge-output-format", "mp4",
                 "-o", raw_video,
@@ -247,7 +276,7 @@ def main():
                 "yt-dlp",
                 *proxy_cmd,
                 "--extractor-args", "youtube:player_client=android;player_skip=webpage,configs,initial_data",
-                "-f", "b/bv+ba/best",
+                "-f", "312+234/311+234/b/bv+ba/best",
                 "--download-sections", clip_section,
                 "--merge-output-format", "mp4",
                 "-o", raw_video,
@@ -258,7 +287,7 @@ def main():
                 "yt-dlp",
                 *proxy_cmd,
                 "--extractor-args", "youtube:player_client=mweb",
-                "-f", "bv*[height<=1080]+ba/b/best",
+                "-f", "312+234/311+234/bv*[height<=1080]+ba/b/best",
                 "--download-sections", clip_section,
                 "--merge-output-format", "mp4",
                 "-o", raw_video,

@@ -4,7 +4,13 @@ on:
   schedule:
     # Trigger automatically every 30 minutes in GitHub Cloud
     - cron: '*/30 * * * *'
-  workflow_dispatch: # Can also be triggered via cron-job.org API dispatch
+  workflow_dispatch:
+    inputs:
+      video_id:
+        description: 'Specific YouTube Video or Stream ID to clip'
+        required: false
+        type: string
+        default: ''
 
 jobs:
   clip_and_upload:
@@ -58,6 +64,7 @@ jobs:
         env:
           CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
           YOUTUBE_TOKEN: ${{ secrets.YOUTUBE_TOKEN }}
+          TARGET_VIDEO_ID: ${{ inputs.video_id }}
         run: |
           cd backend
           python cloud_runner.py
