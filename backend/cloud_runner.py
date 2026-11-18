@@ -173,10 +173,8 @@ def main():
         logger.error(f"No videos found via official API for {query}")
         sys.exit(1)
 
-    # Bulletproof Streamer Verification & Video Selection
-    selected_item = None
-    streamer_verified = False
-
+    # Bulletproof Streamer Verification & Video Candidates Selection
+    candidate_items = []
     if target_streamer:
         s_name = target_streamer.lower()
         s_parts = [p for p in s_name.split() if len(p) > 3]
@@ -187,30 +185,104 @@ def main():
             ch_title = it["snippet"].get("channelTitle", "").lower()
             v_title = it["snippet"].get("title", "").lower()
             if (s_name in ch_title or s_name in v_title) or any(p in ch_title or p in v_title for p in s_parts):
-                selected_item = it
-                streamer_verified = True
-                logger.info(f"Verified authentic video for streamer '{target_streamer}': {it['snippet']['title']} (Channel: {it['snippet']['channelTitle']})")
-                break
+                it["_streamer_verified"] = True
+                candidate_items.append(it)
 
-    if not selected_item:
-        for it in search_res.get("items", []):
-            v_id = it["id"].get("videoId", "")
-            if any(v_id in rt for rt in recent_titles):
-                logger.info(f"Skipping already-clipped video: {it['snippet']['title']} ({v_id})")
-                continue
-            selected_item = it
+    for it in search_res.get("items", []):
+        v_id = it["id"].get("videoId", "")
+        if any(v_id in rt for rt in recent_titles):
+            continue
+        if it not in candidate_items:
+            it["_streamer_verified"] = False
+            candidate_items.append(it)
+
+    if not candidate_items:
+        candidate_items = search_res.get("items", [])[:5]
+
+    # 4. Download segment from the meat of the long video (Strict 1080p / 720p HD)
+    os.makedirs(os.path.join(base_dir, "storage", "uploads"), exist_ok=True)
+    os.makedirs(os.path.join(base_dir, "storage", "exports"), exist_ok=True)
+    raw_video = os.path.join(base_dir, "storage", "uploads", f"cloud_{int(time.time())}.mp4")
+
+    clip_section = topic_item.get("slice", "*00:01:30-00:02:05")
+    logger.info(f"Slicing punchy 35-second moment from full long video: {clip_section}")
+
+    fmt_sort = "res:1080,res:720,quality,codec:h264,size,br"
+    fmt_spec = "bestvideo[height>=720]+bestaudio/best[height>=720]/bestvideo+bestaudio/best"
+
+    downloaded = False
+    chosen_item = None
+
+    for candidate in candidate_items[:5]:
+        vid = candidate["id"]["videoId"]
+        yt_url = f"https://www.youtube.com/watch?v={vid}"
+        raw_video_title = candidate["snippet"]["title"]
+        actual_channel = candidate["snippet"]["channelTitle"].strip()
+        logger.info(f"Attempting download for candidate: '{raw_video_title}' by '{actual_channel}' ({yt_url})...")
+
+        dl_strategies = [
+            # Strategy 1: PO-Token server (Official YouTube BotGuard bypass for Azure VMs)
+            [
+                "yt-dlp",
+                "--extractor-args", "youtubepot-bgutilhttp:base_url=http://127.0.0.1:4416",
+                "--extractor-args", "youtube:player_client=web,ios,tv",
+                "--format-sort", fmt_sort,
+                "-f", fmt_spec,
+                "--download-sections", clip_section,
+                "--merge-output-format", "mp4",
+                "-o", raw_video,
+                yt_url
+            ],
+            # Strategy 2: TV and Web client with Deno JS engine
+            [
+                "yt-dlp",
+                "--js-runtimes", "deno",
+                "--socket-timeout", "25",
+                "--extractor-args", "youtube:player_client=tv,web",
+                "--format-sort", fmt_sort,
+                "-f", fmt_spec,
+                "--download-sections", clip_section,
+                "--merge-output-format", "mp4",
+                "-o", raw_video,
+                yt_url
+            ],
+            # Strategy 3: iOS and mobile web client
+            [
+                "yt-dlp",
+                "--js-runtimes", "deno",
+                "--socket-timeout", "25",
+                "--extractor-args", "youtube:player_client=ios,mweb",
+                "--format-sort", fmt_sort,
+                "-f", fmt_spec,
+                "--download-sections", clip_section,
+                "--merge-output-format", "mp4",
+                "-o", raw_video,
+                yt_url
+            ]
+        ]
+
+        for strat in dl_strategies:
+            try:
+                subprocess.run(strat, check=True, timeout=60)
+                if os.path.exists(raw_video) and os.path.getsize(raw_video) > 50000:
+                    logger.info(f"Downloaded video segment successfully from '{actual_channel}': {raw_video}")
+                    downloaded = True
+                    chosen_item = candidate
+                    break
+            except Exception as e:
+                logger.warning(f"Download strategy failed: {e}. Trying next...")
+
+        if downloaded:
             break
 
-    if not selected_item:
-        selected_item = search_res["items"][0]
-
-    vid = selected_item["id"]["videoId"]
-    yt_url = f"https://www.youtube.com/watch?v={vid}"
-    raw_video_title = selected_item["snippet"]["title"]
-    actual_channel = selected_item["snippet"]["channelTitle"].strip()
-    logger.info(f"Target video found via Official API: '{raw_video_title}' by '{actual_channel}' ({yt_url})")
+    if not downloaded or not chosen_item:
+        logger.error("Could not download any authentic long video. Aborting job to protect channel quality!")
+        sys.exit(1)
 
     # 100% TRUTHFUL HOOK & TITLE ENGINE: Never falsely attribute another creator's video!
+    actual_channel = chosen_item["snippet"]["channelTitle"].strip()
+    streamer_verified = chosen_item.get("_streamer_verified", False)
+
     if target_streamer:
         if streamer_verified:
             hook = base_hook
@@ -226,75 +298,6 @@ def main():
         upload_title = f"{hook} #{tag} #Shorts"
 
     logger.info(f"Final Truthful Hook: '{hook}' | Upload Title: '{upload_title}'")
-
-    # 4. Download segment from the meat of the long video (Strict 1080p / 720p HD)
-    os.makedirs(os.path.join(base_dir, "storage", "uploads"), exist_ok=True)
-    os.makedirs(os.path.join(base_dir, "storage", "exports"), exist_ok=True)
-    raw_video = os.path.join(base_dir, "storage", "uploads", f"cloud_{int(time.time())}.mp4")
-
-    clip_section = topic_item.get("slice", "*00:01:30-00:02:05")
-    logger.info(f"Slicing punchy 35-second moment from full long video: {clip_section}")
-
-    fmt_sort = "res:1080,res:720,quality,codec:h264,size,br"
-    fmt_spec = "bestvideo[height>=720]+bestaudio/best[height>=720]/bestvideo+bestaudio/best"
-
-    dl_strategies = [
-        # Strategy 1: Android & TV clients (Official YouTube API clients, never bot-blocked on Azure)
-        [
-            "yt-dlp",
-            "--js-runtimes", "deno",
-            "--socket-timeout", "25",
-            "--extractor-args", "youtube:player_client=android,tv",
-            "--format-sort", fmt_sort,
-            "-f", fmt_spec,
-            "--download-sections", clip_section,
-            "--merge-output-format", "mp4",
-            "-o", raw_video,
-            yt_url
-        ],
-        # Strategy 2: TV and Web client with Deno JS engine
-        [
-            "yt-dlp",
-            "--js-runtimes", "deno",
-            "--socket-timeout", "25",
-            "--extractor-args", "youtube:player_client=tv,web",
-            "--format-sort", fmt_sort,
-            "-f", fmt_spec,
-            "--download-sections", clip_section,
-            "--merge-output-format", "mp4",
-            "-o", raw_video,
-            yt_url
-        ],
-        # Strategy 3: iOS and mobile web client
-        [
-            "yt-dlp",
-            "--js-runtimes", "deno",
-            "--socket-timeout", "25",
-            "--extractor-args", "youtube:player_client=ios,mweb",
-            "--format-sort", fmt_sort,
-            "-f", fmt_spec,
-            "--download-sections", clip_section,
-            "--merge-output-format", "mp4",
-            "-o", raw_video,
-            yt_url
-        ]
-    ]
-
-    downloaded = False
-    for strat in dl_strategies:
-        try:
-            subprocess.run(strat, check=True, timeout=60)
-            if os.path.exists(raw_video) and os.path.getsize(raw_video) > 50000:
-                logger.info(f"Downloaded video segment successfully: {raw_video}")
-                downloaded = True
-                break
-        except Exception as e:
-            logger.warning(f"Download strategy failed: {e}. Trying next...")
-
-    if not downloaded:
-        logger.warning("All download strategies failed. Using high-quality video fallback...")
-        from sample_data import generate_sample_mp4
-        generate_sample_mp4(raw_video, duration=35)
     else:
         try:
             res_out = subprocess.check_output(
