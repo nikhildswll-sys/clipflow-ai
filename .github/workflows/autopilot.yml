@@ -40,7 +40,7 @@ jobs:
         uses: fscarmen/warp-on-actions@v1.4
         with:
           stack: ipv4
-          mode: proxy
+          mode: client
 
       - name: Install Python Packages
         timeout-minutes: 3
