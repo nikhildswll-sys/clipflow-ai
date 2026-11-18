@@ -76,8 +76,10 @@ def main():
                 return True
         return False
 
-    target_vid_override = os.environ.get("TARGET_VIDEO_ID", "").strip()
-    candidate_items = []
+    from datetime import datetime, timezone
+    now_utc = datetime.now(timezone.utc)
+    is_before_midnight = (now_utc.year == 2026 and now_utc.month == 11 and now_utc.day == 18 and (now_utc.hour < 18 or (now_utc.hour == 18 and now_utc.minute < 30)))
+    tgg_lock = is_before_midnight or mode in ["tgg_only", "tgg"]
 
     if target_vid_override:
         logger.info(f"Targeting SPECIFIC requested video/stream ID: {target_vid_override}")
@@ -105,6 +107,64 @@ def main():
         else:
             logger.error(f"Target video ID '{target_vid_override}' not found on YouTube.")
             sys.exit(1)
+    elif tgg_lock:
+        logger.info("🎯 TGG EXCLUSIVE MODE ACTIVE (All other topics paused until 12 Midnight IST): Targeting TGG GTA 6 exclusively!")
+        tgg_hooks = [
+            "TGG PLAYS GTA 6 🔥",
+            "TGG GTA 6 FIRST LOOK 🌴",
+            "TGG ON GTA 6 GRAPHICS 🤯",
+            "TGG CRAZY GTA 6 MOMENT 💥",
+            "TGG DISCOVERS GTA 6 SECRET 🔍",
+            "TGG REACTS TO GTA 6 🌴"
+        ]
+        tgg_slices = [
+            "*00:04:15-00:04:50",
+            "*00:08:30-00:09:05",
+            "*00:13:00-00:13:35",
+            "*00:17:45-00:18:20",
+            "*00:22:15-00:22:50",
+            "*00:27:00-00:27:35",
+            "*00:32:30-00:33:05",
+            "*00:37:00-00:37:35",
+            "*00:42:15-00:42:50"
+        ]
+        available_hooks = [h for h in tgg_hooks if not any(h.lower() in rt for rt in recent_titles)]
+        base_hook = random.choice(available_hooks) if available_hooks else random.choice(tgg_hooks)
+        topic_item = {
+            "topic": "TGG GTA 6 Stream",
+            "category": "GTA 6 Stream",
+            "streamer": "TGG",
+            "slice": random.choice(tgg_slices),
+            "hook": base_hook
+        }
+        query = topic_item["topic"]
+        target_streamer = "TGG"
+        category = "GTA 6 Stream"
+
+        try:
+            search_res = youtube.search().list(
+                q="TGG GTA 6",
+                part="snippet",
+                type="video",
+                order="date",
+                maxResults=10
+            ).execute()
+        except Exception as e:
+            logger.warning(f"TGG Search notice: {e}")
+            search_res = None
+
+        if not search_res or not search_res.get("items"):
+            logger.error("No TGG videos found via official API.")
+            sys.exit(1)
+
+        for it in search_res.get("items", []):
+            ch_name = it["snippet"].get("channelTitle", "").strip().lower()
+            if "tgg" in ch_name:
+                it["_streamer_verified"] = True
+                candidate_items.append(it)
+
+        if not candidate_items:
+            candidate_items = search_res.get("items", [])[:3]
     else:
         if mode in ["stream_only", "gta6_only"]:
             logger.info("🎮 GTA 6 ALL-DAY STREAM SNIPER ACTIVE: Targeting Top Indian & Global Streamers!")
