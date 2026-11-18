@@ -81,6 +81,9 @@ def main():
     is_before_midnight = (now_utc.year == 2026 and now_utc.month == 11 and now_utc.day == 18 and (now_utc.hour < 18 or (now_utc.hour == 18 and now_utc.minute < 30)))
     tgg_lock = is_before_midnight or mode in ["tgg_only", "tgg"]
 
+    target_vid_override = os.environ.get("TARGET_VIDEO_ID", "").strip()
+    candidate_items = []
+
     if target_vid_override:
         logger.info(f"Targeting SPECIFIC requested video/stream ID: {target_vid_override}")
         v_res = youtube.videos().list(id=target_vid_override, part="snippet").execute()
