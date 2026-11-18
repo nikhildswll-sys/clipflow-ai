@@ -298,15 +298,15 @@ def main():
         upload_title = f"{hook} #{tag} #Shorts"
 
     logger.info(f"Final Truthful Hook: '{hook}' | Upload Title: '{upload_title}'")
-    else:
-        try:
-            res_out = subprocess.check_output(
-                ["ffprobe", "-v", "error", "-select_streams", "v:0", "-show_entries", "stream=width,height", "-of", "csv=p=0", raw_video],
-                text=True
-            ).strip().replace(",", "x")
-            logger.info(f"Verified downloaded video resolution: {res_out} (High Definition source verified)")
-        except Exception as e:
-            logger.info(f"Resolution check notice: {e}")
+
+    try:
+        res_out = subprocess.check_output(
+            ["ffprobe", "-v", "error", "-select_streams", "v:0", "-show_entries", "stream=width,height", "-of", "csv=p=0", raw_video],
+            text=True
+        ).strip().replace(",", "x")
+        logger.info(f"Verified downloaded video resolution: {res_out} (High Definition source verified)")
+    except Exception as e:
+        logger.info(f"Resolution check notice: {e}")
 
     # 5. Word-by-Word Subtitle Transcription (Hormozi / MrBeast Animated Captions)
     ass_rel_path = f"storage/exports/sub_{int(time.time())}.ass"
