@@ -40,15 +40,13 @@ jobs:
 
       - name: Install Python Packages
         run: |
-          pip install --no-cache-dir yt-dlp "bgutil-ytdlp-pot-provider==0.8.1" google-api-python-client google-auth-oauthlib google-auth faster-whisper
+          pip install --no-cache-dir yt-dlp bgutil-ytdlp-pot-provider google-api-python-client google-auth-oauthlib google-auth faster-whisper
 
       - name: Start YouTube BotGuard PO-Token Provider (Cloud Anti-Bot Bypass)
         continue-on-error: true
         run: |
-          wget -q https://github.com/jim60105/bgutil-ytdlp-pot-provider-rs/releases/latest/download/bgutil-pot-linux-x86_64 -O bgutil-pot
-          chmod +x bgutil-pot
-          ./bgutil-pot server --host 127.0.0.1 --port 4416 &
-          sleep 3
+          docker run --name bgutil-provider -d -p 4416:4416 brainicism/bgutil-ytdlp-pot-provider:latest
+          sleep 5
 
       - name: Run Cloud AutoPilot Clipper & Uploader
         env:

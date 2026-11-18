@@ -223,15 +223,15 @@ def main():
     logger.info(f"Slicing punchy 35-second moment from full long video: {clip_section}")
 
     fmt_sort = "res:1080,res:720,quality,codec:h264,size,br"
-    fmt_spec = "bestvideo[height>=720]+bestaudio/best[height>=720]/bestvideo+bestaudio/best"
+    fmt_spec = "bestvideo[height>=720]+bestaudio/best[height>=720]"
 
     dl_strategies = [
-        # Strategy 1: PO-Token server + web/ios/tv clients (Pristine 1080p/720p)
+        # Strategy 1: PO-Token server + web,tv clients (Pristine 1080p/720p)
         [
             "yt-dlp",
             "--remote-components", "ejs:github",
             "--extractor-args", "youtubepot-bgutilhttp:base_url=http://127.0.0.1:4416",
-            "--extractor-args", "youtube:player_client=web,ios,tv",
+            "--extractor-args", "youtube:player_client=web,tv",
             "--format-sort", fmt_sort,
             "-f", fmt_spec,
             "--download-sections", clip_section,
@@ -239,11 +239,12 @@ def main():
             "-o", raw_video,
             yt_url
         ],
-        # Strategy 2: iOS client with HLS (Never gets SABR-blocked, 1080p/720p clean)
+        # Strategy 2: PO-Token server + web_creator client (Bypasses bot checks, 1080p/720p)
         [
             "yt-dlp",
             "--remote-components", "ejs:github",
-            "--extractor-args", "youtube:player_client=ios,tv",
+            "--extractor-args", "youtubepot-bgutilhttp:base_url=http://127.0.0.1:4416",
+            "--extractor-args", "youtube:player_client=web_creator,tv",
             "--format-sort", fmt_sort,
             "-f", fmt_spec,
             "--download-sections", clip_section,
@@ -255,7 +256,7 @@ def main():
         [
             "yt-dlp",
             "--remote-components", "ejs:github",
-            "--extractor-args", "youtube:player_client=web,mweb",
+            "--extractor-args", "youtube:player_client=web,tv",
             "--format-sort", fmt_sort,
             "-f", fmt_spec,
             "--download-sections", clip_section,
