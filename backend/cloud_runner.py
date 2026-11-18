@@ -111,18 +111,59 @@ def main():
             logger.error(f"Target video ID '{target_vid_override}' not found on YouTube.")
             sys.exit(1)
     elif tgg_lock:
-        logger.info("🎯 TGG EXCLUSIVE MODE ACTIVE (All other topics paused until 12 Midnight IST): Targeting TGG GTA 6 exclusively!")
-        tgg_channel_id = "UC72PuhDwKtZ5MikpGNhPAtA"
-        tgg_live_id = "xMXp80Cntxw"
-
-        tgg_hooks = [
-            "TGG PLAYS GTA 6 🔥",
-            "TGG GTA 6 FIRST LOOK 🌴",
-            "TGG ON GTA 6 GRAPHICS 🤯",
-            "TGG CRAZY GTA 6 MOMENT 💥",
-            "TGG DISCOVERS GTA 6 SECRET 🔍",
-            "TGG REACTS TO GTA 6 🌴"
+        logger.info("🎯 TGG & MYTHPAT EXCLUSIVE DUO ACTIVE (All other topics paused until 12 Midnight IST)!")
+        
+        creators = [
+            {
+                "name": "Mythpat",
+                "channel_id": "UCx6F-rETGiz7xf_vkMmX2yQ",
+                "live_id": "LMbea5SozeM",
+                "live_title": "Welcome to Vice City! GTA 6 LIVE with Mythpat",
+                "hooks": [
+                    "MYTHPAT PLAYS GTA 6 🔥",
+                    "MYTHPAT FUNNY GTA 6 MOMENT 😂",
+                    "MYTHPAT IN VICE CITY 🌴",
+                    "MYTHPAT ON GTA 6 GRAPHICS 🤯",
+                    "MYTHPAT CRAZY GTA 6 REACTION 💥",
+                    "MYTHPAT DISCOVERS GTA 6 SECRET 🔍"
+                ]
+            },
+            {
+                "name": "TGG",
+                "channel_id": "UC72PuhDwKtZ5MikpGNhPAtA",
+                "live_id": "xMXp80Cntxw",
+                "live_title": "GTA 6 LAUNCH STREAM! Playing GTA 6 for the First Time",
+                "hooks": [
+                    "TGG PLAYS GTA 6 🔥",
+                    "TGG GTA 6 FIRST LOOK 🌴",
+                    "TGG ON GTA 6 GRAPHICS 🤯",
+                    "TGG CRAZY GTA 6 MOMENT 💥",
+                    "TGG DISCOVERS GTA 6 SECRET 🔍",
+                    "TGG REACTS TO GTA 6 🌴"
+                ]
+            }
         ]
+
+        # Smart alternating rotation: Check recent uploads
+        # If last upload was TGG, pick Mythpat; if last upload was Mythpat, pick TGG!
+        last_was_tgg = any("tgg" in rt.lower() for rt in recent_titles[:3])
+        last_was_mythpat = any("mythpat" in rt.lower() for rt in recent_titles[:3])
+
+        if last_was_tgg and not last_was_mythpat:
+            selected_creator = creators[0]  # Mythpat
+        elif last_was_mythpat and not last_was_tgg:
+            selected_creator = creators[1]  # TGG
+        else:
+            selected_creator = random.choice(creators)
+
+        logger.info(f"Selected Creator for this run: {selected_creator['name']} (Channel ID: {selected_creator['channel_id']})")
+
+        cr_name = selected_creator["name"]
+        cr_channel_id = selected_creator["channel_id"]
+        cr_live_id = selected_creator["live_id"]
+        cr_live_title = selected_creator["live_title"]
+        cr_hooks = selected_creator["hooks"]
+
         tgg_slices = [
             "*00:03:30-00:04:05",
             "*00:06:15-00:06:50",
@@ -131,29 +172,29 @@ def main():
             "*00:15:30-00:16:05",
             "*00:19:00-00:19:35"
         ]
-        available_hooks = [h for h in tgg_hooks if not any(h.lower() in rt for rt in recent_titles)]
-        base_hook = random.choice(available_hooks) if available_hooks else random.choice(tgg_hooks)
+        available_hooks = [h for h in cr_hooks if not any(h.lower() in rt for rt in recent_titles)]
+        base_hook = random.choice(available_hooks) if available_hooks else random.choice(cr_hooks)
         topic_item = {
-            "topic": "TGG GTA 6 Stream",
+            "topic": f"{cr_name} GTA 6 Stream",
             "category": "GTA 6 Stream",
-            "streamer": "TGG",
+            "streamer": cr_name,
             "slice": random.choice(tgg_slices),
             "hook": base_hook
         }
         query = topic_item["topic"]
-        target_streamer = "TGG"
+        target_streamer = cr_name
         category = "GTA 6 Stream"
 
         try:
             search_res = youtube.search().list(
-                channelId=tgg_channel_id,
+                channelId=cr_channel_id,
                 part="snippet",
                 type="video",
                 order="date",
                 maxResults=10
             ).execute()
         except Exception as e:
-            logger.warning(f"TGG Search notice: {e}")
+            logger.warning(f"{cr_name} Search notice: {e}")
             search_res = None
 
         candidate_items = []
@@ -164,10 +205,10 @@ def main():
 
         # Always include active live stream as candidate
         candidate_items.insert(0, {
-            "id": {"videoId": tgg_live_id},
+            "id": {"videoId": cr_live_id},
             "snippet": {
-                "title": "GTA 6 LAUNCH STREAM! Playing GTA 6 for the First Time",
-                "channelTitle": "TGG"
+                "title": cr_live_title,
+                "channelTitle": cr_name
             },
             "_streamer_verified": True
         })
@@ -486,8 +527,8 @@ def main():
     upload_res = YouTubeUploader.upload_short(
         video_path=rendered_video,
         title=upload_title,
-        description=f"{upload_title}\n\nCreator: {actual_channel}\nSource Video: {yt_url} [ID: {vid}]\nAuto-curated by ClipFlow AI.\n#Shorts #Viral #Gaming #GTA6 #{category.replace(' ', '')}",
-        tags=["#Shorts", "#GTA6", "#Gaming", "#Viral", "#Trending", category.replace(" ", "")],
+        description=f"{upload_title}\n\nCreator: {actual_channel}\nSource Video: {yt_url} [ID: {vid}]\nAuto-curated by ClipFlow AI.\n#Shorts #Viral #Gaming #GTA6 #{actual_channel.replace(' ', '')} #{category.replace(' ', '')}",
+        tags=["#Shorts", "#GTA6", "#Gaming", "#Viral", "#Trending", actual_channel.replace(" ", ""), category.replace(" ", "")],
         privacy_status="public",
         client_secrets_path=secret_file
     )
