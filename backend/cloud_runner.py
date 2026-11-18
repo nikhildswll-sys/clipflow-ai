@@ -46,9 +46,10 @@ def main():
 
     logger.info(f"Slot {slot}: Selected Topic: '{query}' ({category})")
 
-    # 3. Search YouTube for top video
+    # 3. Search YouTube for top video using Android client to bypass bot check on datacenter IPs
     search_cmd = [
         "yt-dlp",
+        "--extractor-args", "youtube:player_client=android",
         f"ytsearch1:{query}",
         "--dump-json",
         "--no-playlist"
@@ -59,7 +60,7 @@ def main():
         sys.exit(1)
 
     video_info = json.loads(res.stdout.strip().splitlines()[0])
-    yt_url = video_info.get("webpage_url") or video_info.get("url")
+    yt_url = video_info.get("webpage_url") or video_info.get("original_url") or f"https://www.youtube.com/watch?v={video_info.get('id')}"
     title = video_info.get("title", query)
     logger.info(f"Target video found: {title} ({yt_url})")
 
@@ -70,7 +71,8 @@ def main():
 
     dl_cmd = [
         "yt-dlp",
-        "-f", "bv*[height<=720]+ba/b[height<=720]/b",
+        "--extractor-args", "youtube:player_client=android",
+        "-f", "b/bv*+ba/best",
         "--download-sections", "*00:00:15-00:01:00",
         "--merge-output-format", "mp4",
         "-o", raw_video,
@@ -81,10 +83,11 @@ def main():
 
     # 5. Render 9:16 vertical Short
     rendered_video = os.path.join(base_dir, "storage", "exports", f"short_{int(time.time())}.mp4")
+    clean_hook = hook.replace("'", "").replace(":", "")
     render_cmd = [
         "ffmpeg", "-y",
         "-i", raw_video,
-        "-vf", "crop=ih*(9/16):ih,scale=1080:1920:flags=lanczos,drawtext=text='" + hook.replace("'", "") + "':x=(w-text_w)/2:y=180:fontsize=48:fontcolor=white:box=1:boxcolor=red@0.9:boxborderw=18",
+        "-vf", f"crop=ih*(9/16):ih,scale=1080:1920:flags=lanczos,drawtext=text='{clean_hook}':x=(w-text_w)/2:y=180:fontsize=44:fontcolor=white:box=1:boxcolor=red@0.9:boxborderw=18",
         "-c:v", "libx264", "-preset", "ultrafast", "-crf", "22",
         "-c:a", "aac", "-b:a", "192k",
         rendered_video
