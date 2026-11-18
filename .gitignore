@@ -52,7 +52,10 @@ backend/storage/*.json
 .env.test.local
 .env.production.local
 client_secrets.json
+client_secret.json
+client_secret*.json
 token.json
+*token*.json
 
 # IDE & OS
 .vscode/
