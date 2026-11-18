@@ -542,7 +542,14 @@ def main():
     )
 
     logger.info(f"Upload Result: {upload_res}")
-    print("FINISHED_SUCCESSFULLY:", upload_res.get("video_url"))
+    if upload_res.get("status") == "error":
+        err_msg = upload_res.get("message", "")
+        if "uploadLimitExceeded" in str(err_msg):
+            logger.warning("YouTube 24-hour daily upload quota reached. Job completed safely. Next run will upload once YouTube window unlocks.")
+        else:
+            logger.error(f"Upload error: {err_msg}")
+    else:
+        print("FINISHED_SUCCESSFULLY:", upload_res.get("video_url"))
 
 if __name__ == "__main__":
     main()

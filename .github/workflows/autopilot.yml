@@ -14,8 +14,8 @@ on:
 
 jobs:
   clip_and_upload:
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
 
     steps:
       - name: Checkout Repository
@@ -31,20 +31,10 @@ jobs:
         with:
           deno-version: v2.x
 
-      - name: Install FFmpeg & System Dependencies
-        timeout-minutes: 10
-        run: |
-          if ! command -v ffmpeg &> /dev/null; then
-            echo "Installing FFmpeg..."
-            sudo systemctl stop unattended-upgrades 2>/dev/null || true
-            sudo killall -9 apt apt-get unattended-upgrade 2>/dev/null || true
-            sudo rm -f /var/lib/apt/lists/lock /var/cache/apt/archives/lock /var/lib/dpkg/lock* 2>/dev/null || true
-            sudo dpkg --configure -a 2>/dev/null || true
-            sudo apt-get update -qq -o Acquire::http::Timeout=20
-            sudo apt-get install -y --no-install-recommends -o Acquire::http::Timeout=30 -o Acquire::Retries=3 ffmpeg fonts-dejavu-core
-          else
-            echo "FFmpeg already installed: $(ffmpeg -version | head -n 1)"
-          fi
+      - name: Setup FFmpeg
+        uses: FedericoCarboni/setup-ffmpeg@v3
+        with:
+          ffmpeg-version: release
 
       - name: Setup Cloudflare WARP SOCKS5 Proxy (Datacenter Anti-Bot Bypass)
         continue-on-error: true
