@@ -33,18 +33,34 @@ def main():
         logger.error("No YouTube token available. Run local authentication first!")
         sys.exit(1)
 
-    # 2. Pick current viral topic based on hourly slot
+    # 2. Pick current viral topic using Smart Weighted Randomization
+    # 40% GTA 6 (High Search Volume) + 60% Rich Mix (Podcasts, Sci-Fi, History, Kids/Wonders)
     from autopilot import AutoPilotService
     service = AutoPilotService()
     
-    # Select topic by current hour / minute hash
-    slot = int(time.time() // 1800) # 30 min slots
-    topic_item = service.topics[slot % len(service.topics)]
+    category_weights = {
+        "GTA 6": 0.40,
+        "Podcast": 0.20,
+        "Sci-Fi": 0.15,
+        "History": 0.15,
+        "Wonders": 0.10
+    }
+
+    try:
+        available_cats = list(category_weights.keys())
+        weights = [category_weights[c] for c in available_cats]
+        chosen_cat = random.choices(available_cats, weights=weights, k=1)[0]
+        cat_topics = [t for t in service.topics if t.get("category") == chosen_cat]
+        topic_item = random.choice(cat_topics) if cat_topics else random.choice(service.topics)
+    except Exception as e:
+        logger.warning(f"Random selection fallback: {e}. Picking uniform random topic.")
+        topic_item = random.choice(service.topics)
+
     query = topic_item["topic"]
     hook = topic_item.get("hook", "WAIT FOR IT... 🤯")
     category = topic_item.get("category", "Trending")
 
-    logger.info(f"Slot {slot}: Selected Topic: '{query}' ({category})")
+    logger.info(f"Randomly Selected Viral Topic: '{query}' ({category}) | Hook: '{hook}'")
 
     # 3. Search YouTube for top video using OFFICIAL YouTube API (100% immune to bot-checks)
     from googleapiclient.discovery import build
