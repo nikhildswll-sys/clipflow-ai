@@ -10,6 +10,8 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("CloudAutoPilot")
 
 def main():
+    import socket
+    socket.setdefaulttimeout(60)
     logger.info("Starting Cloud AutoPilot Job...")
 
     # 1. Restore credentials from GitHub Secrets if present
@@ -130,22 +132,39 @@ def main():
     
     search_res = None
     query_candidates = [
-        search_query,
-        f"{' '.join(query.split()[:4])} -#shorts",
-        f"{category} gameplay 4K -#shorts"
+        f"{query} gameplay",
+        query,
+        f"{' '.join(query.split()[:4])}",
+        f"{category} full walkthrough 1080p"
     ]
     for q_cand in query_candidates:
         try:
+            # 1. First priority: Medium duration videos (4 to 20 minutes)
             res = youtube.search().list(
                 q=q_cand,
                 part="snippet",
                 type="video",
+                videoDuration="medium",
                 order="viewCount",
                 maxResults=10
             ).execute()
             if res.get("items"):
                 search_res = res
-                logger.info(f"Found {len(res['items'])} candidate videos using: '{q_cand}'")
+                logger.info(f"Found {len(res['items'])} medium duration candidate videos using: '{q_cand}'")
+                break
+
+            # 2. Second priority: Long duration videos (>20 minutes full stream/podcast)
+            res = youtube.search().list(
+                q=q_cand,
+                part="snippet",
+                type="video",
+                videoDuration="long",
+                order="viewCount",
+                maxResults=10
+            ).execute()
+            if res.get("items"):
+                search_res = res
+                logger.info(f"Found {len(res['items'])} long duration candidate videos using: '{q_cand}'")
                 break
         except Exception as e:
             logger.warning(f"Search notice for '{q_cand}': {e}")
@@ -217,15 +236,15 @@ def main():
     logger.info(f"Slicing punchy 35-second moment from full long video: {clip_section}")
 
     fmt_sort = "res:1080,res:720,quality,codec:h264,size,br"
-    fmt_spec = "bestvideo[height>=720]+bestaudio/best[height>=720]"
+    fmt_spec = "bestvideo[height>=720]+bestaudio/best[height>=720]/bestvideo+bestaudio/best"
 
     dl_strategies = [
-        # Strategy 1: Web and TV clients with official Deno JS solver (1080p/720p)
+        # Strategy 1: Android & TV clients (Official YouTube API clients, never bot-blocked on Azure)
         [
             "yt-dlp",
-            "--remote-components", "ejs:github",
-            "--socket-timeout", "20",
-            "--extractor-args", "youtube:player_client=web,tv",
+            "--js-runtimes", "deno",
+            "--socket-timeout", "25",
+            "--extractor-args", "youtube:player_client=android,tv",
             "--format-sort", fmt_sort,
             "-f", fmt_spec,
             "--download-sections", clip_section,
@@ -233,12 +252,12 @@ def main():
             "-o", raw_video,
             yt_url
         ],
-        # Strategy 2: Web creator client with Deno (Bypasses bot checks, 1080p/720p)
+        # Strategy 2: TV and Web client with Deno JS engine
         [
             "yt-dlp",
-            "--remote-components", "ejs:github",
-            "--socket-timeout", "20",
-            "--extractor-args", "youtube:player_client=web_creator,tv",
+            "--js-runtimes", "deno",
+            "--socket-timeout", "25",
+            "--extractor-args", "youtube:player_client=tv,web",
             "--format-sort", fmt_sort,
             "-f", fmt_spec,
             "--download-sections", clip_section,
@@ -249,8 +268,8 @@ def main():
         # Strategy 3: iOS and mobile web client
         [
             "yt-dlp",
-            "--remote-components", "ejs:github",
-            "--socket-timeout", "20",
+            "--js-runtimes", "deno",
+            "--socket-timeout", "25",
             "--extractor-args", "youtube:player_client=ios,mweb",
             "--format-sort", fmt_sort,
             "-f", fmt_spec,
@@ -264,7 +283,7 @@ def main():
     downloaded = False
     for strat in dl_strategies:
         try:
-            subprocess.run(strat, check=True, timeout=90)
+            subprocess.run(strat, check=True, timeout=60)
             if os.path.exists(raw_video) and os.path.getsize(raw_video) > 50000:
                 logger.info(f"Downloaded video segment successfully: {raw_video}")
                 downloaded = True
@@ -354,7 +373,7 @@ def main():
         "-t", "35",
         rendered_video
     ]
-    subprocess.run(render_cmd, check=True)
+    subprocess.run(render_cmd, check=True, timeout=120)
     logger.info(f"Rendered 9:16 Full HD Short: {rendered_video}")
 
     # 6. Upload to YouTube Shorts
