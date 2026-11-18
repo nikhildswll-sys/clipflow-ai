@@ -14,8 +14,7 @@ on:
 
 jobs:
   clip_and_upload:
-    runs-on: ubuntu-24.04
-    timeout-minutes: 25
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout Repository
@@ -31,10 +30,10 @@ jobs:
         with:
           deno-version: v2.x
 
-      - name: Setup FFmpeg
-        uses: FedericoCarboni/setup-ffmpeg@v3
-        with:
-          ffmpeg-version: release
+      - name: Install System Dependencies (FFmpeg & Fonts)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg fonts-dejavu-core
 
       - name: Setup Cloudflare WARP SOCKS5 Proxy (Datacenter Anti-Bot Bypass)
         continue-on-error: true
