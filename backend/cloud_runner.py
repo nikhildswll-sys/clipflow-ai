@@ -119,13 +119,13 @@ def main():
                 "channel_id": "UCx6F-rETGiz7xf_vkMmX2yQ",
                 "live_id": "LMbea5SozeM",
                 "live_title": "Welcome to Vice City! GTA 6 LIVE with Mythpat",
-                "hooks": [
-                    "MYTHPAT PLAYS GTA 6 🔥",
-                    "MYTHPAT FUNNY GTA 6 MOMENT 😂",
-                    "MYTHPAT IN VICE CITY 🌴",
-                    "MYTHPAT ON GTA 6 GRAPHICS 🤯",
-                    "MYTHPAT CRAZY GTA 6 REACTION 💥",
-                    "MYTHPAT DISCOVERS GTA 6 SECRET 🔍"
+                "category": "GTA 5",
+                "titles": [
+                    "MYTHPAT'S LAST RIDE IN GTA 5 🥺 #GTA5 #Shorts",
+                    "FAREWELL GTA 5 - MYTHPAT 🚗 #GTA5 #Shorts",
+                    "MYTHPAT ONE LAST RIDE IN GTA 5 ❤️ #GTA5 #Shorts",
+                    "MYTHPAT EMOTIONAL GTA 5 MOMENT 😭 #GTA5 #Shorts",
+                    "MYTHPAT GOODBYE GTA 5 🌴 #GTA5 #Shorts"
                 ]
             },
             {
@@ -133,13 +133,14 @@ def main():
                 "channel_id": "UC72PuhDwKtZ5MikpGNhPAtA",
                 "live_id": "xMXp80Cntxw",
                 "live_title": "GTA 6 LAUNCH STREAM! Playing GTA 6 for the First Time",
-                "hooks": [
-                    "TGG PLAYS GTA 6 🔥",
-                    "TGG GTA 6 FIRST LOOK 🌴",
-                    "TGG ON GTA 6 GRAPHICS 🤯",
-                    "TGG CRAZY GTA 6 MOMENT 💥",
-                    "TGG DISCOVERS GTA 6 SECRET 🔍",
-                    "TGG REACTS TO GTA 6 🌴"
+                "category": "GTA 6",
+                "titles": [
+                    "TGG PLAYS GTA 6 🔥 #GTA6 #Shorts",
+                    "TGG GTA 6 FIRST LOOK 🌴 #GTA6 #Shorts",
+                    "TGG ON GTA 6 GRAPHICS 🤯 #GTA6 #Shorts",
+                    "TGG CRAZY GTA 6 MOMENT 💥 #GTA6 #Shorts",
+                    "TGG DISCOVERS GTA 6 SECRET 🔍 #GTA6 #Shorts",
+                    "TGG REACTS TO GTA 6 🌴 #GTA6 #Shorts"
                 ]
             }
         ]
@@ -162,7 +163,8 @@ def main():
         cr_channel_id = selected_creator["channel_id"]
         cr_live_id = selected_creator["live_id"]
         cr_live_title = selected_creator["live_title"]
-        cr_hooks = selected_creator["hooks"]
+        category = selected_creator.get("category", "GTA 6")
+        cr_titles = selected_creator["titles"]
 
         tgg_slices = [
             "*00:03:30-00:04:05",
@@ -172,18 +174,17 @@ def main():
             "*00:15:30-00:16:05",
             "*00:19:00-00:19:35"
         ]
-        available_hooks = [h for h in cr_hooks if not any(h.lower() in rt for rt in recent_titles)]
-        base_hook = random.choice(available_hooks) if available_hooks else random.choice(cr_hooks)
+        available_titles = [t for t in cr_titles if not any(t.lower()[:20] in rt for rt in recent_titles)]
+        base_hook = random.choice(available_titles) if available_titles else random.choice(cr_titles)
         topic_item = {
-            "topic": f"{cr_name} GTA 6 Stream",
-            "category": "GTA 6 Stream",
+            "topic": f"{cr_name} {category} Stream",
+            "category": category,
             "streamer": cr_name,
             "slice": random.choice(tgg_slices),
             "hook": base_hook
         }
         query = topic_item["topic"]
         target_streamer = cr_name
-        category = "GTA 6 Stream"
 
         try:
             search_res = youtube.search().list(
@@ -374,6 +375,7 @@ def main():
                 "--extractor-args", "youtube:player_client=visionos",
                 "-f", "312+234/311+234/bv*[height<=1080]+ba/b[height<=1080]/bestvideo+bestaudio/best",
                 "--download-sections", clip_section,
+                "--force-keyframes-at-cuts",
                 "--merge-output-format", "mp4",
                 "-o", raw_video,
                 yt_url
@@ -385,6 +387,7 @@ def main():
                 "--extractor-args", "youtube:player_client=android;player_skip=webpage,configs,initial_data",
                 "-f", "312+234/311+234/b/bv+ba/best",
                 "--download-sections", clip_section,
+                "--force-keyframes-at-cuts",
                 "--merge-output-format", "mp4",
                 "-o", raw_video,
                 yt_url
@@ -396,6 +399,7 @@ def main():
                 "--extractor-args", "youtube:player_client=mweb",
                 "-f", "312+234/311+234/bv*[height<=1080]+ba/b/best",
                 "--download-sections", clip_section,
+                "--force-keyframes-at-cuts",
                 "--merge-output-format", "mp4",
                 "-o", raw_video,
                 yt_url
@@ -427,12 +431,16 @@ def main():
     if target_streamer:
         if streamer_verified:
             hook = base_hook
-            upload_title = f"{hook} #GTA6 #Shorts"
+            if "#Shorts" in hook:
+                upload_title = hook
+            else:
+                tag = category.replace(" ", "")
+                upload_title = f"{hook} #{tag} #Shorts"
         else:
             logger.warning(f"Video is by '{actual_channel}', NOT '{target_streamer}'. Deriving truthful hook & title!")
             clean_ch = "".join(c for c in actual_channel if c.isalnum() or c.isspace()).strip()
-            hook = f"{clean_ch.upper()[:20]} GTA 6 REACTION 🔥"
-            upload_title = f"{clean_ch[:24]} Reacts to GTA 6 🌴 #GTA6 #Shorts"
+            hook = f"{clean_ch.upper()[:20]} GTA REACTION 🔥"
+            upload_title = f"{clean_ch[:24]} Plays GTA 🎮 #Shorts"
     else:
         hook = base_hook
         tag = category.replace(" ", "")
@@ -489,24 +497,23 @@ def main():
     if has_subtitles:
         rel_ass = ass_rel_path.replace("\\", "/")
         filter_complex = (
-            "[0:v]split=2[bg][fg];"
+            "[0:v]setpts=PTS-STARTPTS,split=2[bg][fg];"
             "[bg]scale=120:213,boxblur=5:1,scale=1080:1920:flags=bilinear,setsar=1[blurred_bg];"
             "[fg]scale=1080:-1:flags=lanczos,setsar=1[scaled_fg];"
             "[blurred_bg][scaled_fg]overlay=(W-w)/2:(H-h)/2,setsar=1[base_canvas];"
-            f"[base_canvas]drawtext=text='{clean_hook}':x=(w-text_w)/2:y=230:fontsize=46:fontcolor=white:borderw=4:bordercolor=black:shadowcolor=black@0.8:shadowx=3:shadowy=3,setsar=1[canvas_with_hook];"
-            f"[canvas_with_hook]ass={rel_ass}:fontsdir=fonts,setsar=1[final_v]"
+            f"[base_canvas]ass={rel_ass}:fontsdir=fonts,setsar=1,format=yuv420p[final_v]"
         )
     else:
         filter_complex = (
-            "[0:v]split=2[bg][fg];"
+            "[0:v]setpts=PTS-STARTPTS,split=2[bg][fg];"
             "[bg]scale=120:213,boxblur=5:1,scale=1080:1920:flags=bilinear,setsar=1[blurred_bg];"
             "[fg]scale=1080:-1:flags=lanczos,setsar=1[scaled_fg];"
-            "[blurred_bg][scaled_fg]overlay=(W-w)/2:(H-h)/2,setsar=1[base_canvas];"
-            f"[base_canvas]drawtext=text='{clean_hook}':x=(w-text_w)/2:y=230:fontsize=46:fontcolor=white:borderw=4:bordercolor=black:shadowcolor=black@0.8:shadowx=3:shadowy=3,setsar=1[final_v]"
+            "[blurred_bg][scaled_fg]overlay=(W-w)/2:(H-h)/2,setsar=1,format=yuv420p[final_v]"
         )
 
     render_cmd = [
         "ffmpeg", "-y",
+        "-fflags", "+genpts+discardcorrupt",
         "-i", raw_video,
         "-filter_complex", filter_complex,
         "-map", "[final_v]",
@@ -515,6 +522,7 @@ def main():
         "-c:v", "libx264", "-pix_fmt", "yuv420p", "-preset", "veryfast", "-crf", "20",
         "-b:v", "6M", "-maxrate", "10M", "-bufsize", "12M",
         "-c:a", "aac", "-b:a", "192k", "-ar", "44100", "-ac", "2",
+        "-af", "aresample=async=1",
         "-movflags", "+faststart",
         "-t", "35",
         rendered_video
@@ -527,8 +535,8 @@ def main():
     upload_res = YouTubeUploader.upload_short(
         video_path=rendered_video,
         title=upload_title,
-        description=f"{upload_title}\n\nCreator: {actual_channel}\nSource Video: {yt_url} [ID: {vid}]\nAuto-curated by ClipFlow AI.\n#Shorts #Viral #Gaming #GTA6 #{actual_channel.replace(' ', '')} #{category.replace(' ', '')}",
-        tags=["#Shorts", "#GTA6", "#Gaming", "#Viral", "#Trending", actual_channel.replace(" ", ""), category.replace(" ", "")],
+        description=f"{upload_title}\n\nCreator: {actual_channel}\nSource Video: {yt_url} [ID: {vid}]\nAuto-curated by ClipFlow AI.\n#Shorts #Viral #Gaming #{actual_channel.replace(' ', '')} #{category.replace(' ', '')}",
+        tags=["#Shorts", f"#{category.replace(' ', '')}", "#Gaming", "#Viral", "#Trending", actual_channel.replace(" ", "")],
         privacy_status="public",
         client_secrets_path=secret_file
     )
