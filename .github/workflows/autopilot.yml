@@ -32,7 +32,7 @@ jobs:
 
       - name: Install Python Packages
         run: |
-          pip install --no-cache-dir yt-dlp bgutil-ytdlp-pot-provider google-api-python-client google-auth-oauthlib google-auth
+          pip install --no-cache-dir yt-dlp bgutil-ytdlp-pot-provider google-api-python-client google-auth-oauthlib google-auth faster-whisper
 
       - name: Setup Cloudflare WARP (Bypass Cloud Datacenter Bot Checks)
         uses: fscarmen/warp-on-actions@v1.4

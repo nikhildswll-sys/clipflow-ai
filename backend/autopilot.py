@@ -27,17 +27,18 @@ class AutoPilotService:
         {"category": "GTA 6", "topic": "GTA 6 police chase AI behavior trailer details", "hook": "HOW GTA 6 POLICE WILL HUNT YOU 🚨"},
         {"category": "GTA 6", "topic": "GTA 6 car crashes and damage physics comparison 4k", "hook": "GTA 6 CRASH PHYSICS LEAKED 💥"},
 
-        # Sci-Fi & Cosmic Phenomena (Insane Visuals & Wonder)
+        # Sci-Fi, Cosmic & Mind-Blowing Voice Explainers (High Retention Speech Captions)
         {"category": "Sci-Fi", "topic": "James Webb telescope deep space 4K discovery visualization", "hook": "JAMES WEBB CAPTURED THIS IN DEEP SPACE 🔭"},
         {"category": "Sci-Fi", "topic": "black hole accretion disk 4K simulation interstellar", "hook": "WHAT HAPPENS INSIDE A BLACK HOLE? 🕳️"},
         {"category": "Sci-Fi", "topic": "scale of the universe 3D 4k mind blowing", "hook": "HOW TINY ARE WE REALLY? 🌌"},
         {"category": "Sci-Fi", "topic": "solar storm hits earth 4k simulation nasa", "hook": "WHAT A SOLAR STORM DOES TO EARTH ⚡"},
         {"category": "Sci-Fi", "topic": "future mars colony 4K realistic simulation", "hook": "LIFE ON MARS IN 2050 🚀"},
 
-        # Mind-Blowing Robotics & Cyberpunk Tech
+        # Mind-Blowing Science & Philosophy Voice Clips
+        {"category": "Mind Secrets", "topic": "Neil deGrasse Tyson explains simulation theory mind blowing short", "hook": "ARE WE LIVING IN A SIMULATION? 👁️"},
+        {"category": "Sci-Fi", "topic": "Joe Rogan scientist explains black hole time dilation simply", "hook": "TIME STOPS INSIDE A BLACK HOLE ⏳"},
         {"category": "Future Tech", "topic": "Boston Dynamics Atlas robot parkour agility 4K", "hook": "ROBOTS ARE GETTING TOO FAST... 🤖"},
         {"category": "Future Tech", "topic": "cyberpunk humanoid robot realistic facial expression", "hook": "THIS ROBOT LOOKS TOO REAL 😳"},
-        {"category": "Future Tech", "topic": "unreal engine 5 hyper realistic graphics gameplay 4k", "hook": "IS THIS REAL LIFE OR A GAME? 🎮"},
 
         # Deep Earth & Ocean Wonders
         {"category": "Mysteries", "topic": "deep ocean terrifying creatures 4K NOAA discovery", "hook": "ALIEN CREATURES IN THE DEEP SEA 🌊"},

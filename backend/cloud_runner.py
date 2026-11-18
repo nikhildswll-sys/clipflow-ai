@@ -141,18 +141,61 @@ def main():
         from sample_data import generate_sample_mp4
         generate_sample_mp4(raw_video, duration=35)
 
-    # 5. Render 9:16 vertical Full HD Short (Blur-Canvas Pro Layout)
-    rendered_video = os.path.join(base_dir, "storage", "exports", f"short_{int(time.time())}.mp4")
-    clean_hook = hook.replace("'", "").replace(":", "")
+    # 5. Word-by-Word Subtitle Transcription (Hormozi / MrBeast Animated Captions)
+    ass_rel_path = f"storage/exports/sub_{int(time.time())}.ass"
+    ass_full_path = os.path.join(base_dir, ass_rel_path)
+    has_subtitles = False
 
-    # Professional 9:16 canvas: Atmospheric blurred background + crisp 1080p center footage + bold viral title
-    filter_complex = (
-        "[0:v]split=2[bg][fg];"
-        "[bg]scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,boxblur=25:5[blurred_bg];"
-        "[fg]scale=1080:-1:flags=lanczos[scaled_fg];"
-        "[blurred_bg][scaled_fg]overlay=(W-w)/2:(H-h)/2[base_canvas];"
-        f"[base_canvas]drawtext=text='{clean_hook}':x=(w-text_w)/2:y=230:fontsize=46:fontcolor=white:borderw=4:bordercolor=black:shadowcolor=black@0.8:shadowx=3:shadowy=3[final_v]"
-    )
+    try:
+        from caption_styler import CaptionStyler
+        from transcriber import AudioTranscriber
+
+        logger.info("Running AudioTranscriber for viral word-level animated captions...")
+        transcriber = AudioTranscriber(model_size="tiny")
+        transcript_res = transcriber.transcribe(raw_video)
+        words = transcript_res.get("words", [])
+
+        if words and len(words) >= 4:
+            logger.info(f"Extracted {len(words)} speech words. Generating Hormozi SubStation Alpha (ASS) subtitles...")
+            style = "mrbeast" if category in ["GTA 6", "Gaming"] else "hormozi"
+            ass_content = CaptionStyler.generate_ass(
+                words_data=words,
+                style_name=style,
+                video_width=1080,
+                video_height=1920
+            )
+            with open(ass_full_path, "w", encoding="utf-8") as f:
+                f.write(ass_content)
+            if os.path.exists(ass_full_path) and os.path.getsize(ass_full_path) > 50:
+                has_subtitles = True
+                logger.info(f"Generated animated ASS subtitles successfully: {ass_full_path}")
+        else:
+            logger.info(f"Only {len(words)} words detected in audio. Proceeding without burned subtitles.")
+    except Exception as e:
+        logger.warning(f"Transcriber notice: {e}. Will continue with clean visual Short.")
+
+    # 6. Render 9:16 vertical Full HD Short (Blur-Canvas Pro Layout + Hormozi Captions)
+    rendered_video = os.path.join(base_dir, "storage", "exports", f"short_{int(time.time())}.mp4")
+    clean_hook = "".join(c for c in hook if ord(c) < 128 and c not in ["'", ":", '"']).strip()
+
+    if has_subtitles:
+        rel_ass = ass_rel_path.replace("\\", "/")
+        filter_complex = (
+            "[0:v]split=2[bg][fg];"
+            "[bg]scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,boxblur=25:5[blurred_bg];"
+            "[fg]scale=1080:-1:flags=lanczos[scaled_fg];"
+            "[blurred_bg][scaled_fg]overlay=(W-w)/2:(H-h)/2[base_canvas];"
+            f"[base_canvas]drawtext=text='{clean_hook}':x=(w-text_w)/2:y=230:fontsize=46:fontcolor=white:borderw=4:bordercolor=black:shadowcolor=black@0.8:shadowx=3:shadowy=3[canvas_with_hook];"
+            f"[canvas_with_hook]ass={rel_ass}:fontsdir=fonts[final_v]"
+        )
+    else:
+        filter_complex = (
+            "[0:v]split=2[bg][fg];"
+            "[bg]scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,boxblur=25:5[blurred_bg];"
+            "[fg]scale=1080:-1:flags=lanczos[scaled_fg];"
+            "[blurred_bg][scaled_fg]overlay=(W-w)/2:(H-h)/2[base_canvas];"
+            f"[base_canvas]drawtext=text='{clean_hook}':x=(w-text_w)/2:y=230:fontsize=46:fontcolor=white:borderw=4:bordercolor=black:shadowcolor=black@0.8:shadowx=3:shadowy=3[final_v]"
+        )
 
     render_cmd = [
         "ffmpeg", "-y",
