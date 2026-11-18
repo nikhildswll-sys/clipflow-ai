@@ -17,21 +17,21 @@ class CaptionStyler:
 
     STYLE_PRESETS = {
         "hormozi": {
-            "name": "Hormozi Style",
+            "name": "Hormozi Clean",
             "fontname": "Anton",
-            "fontsize": 34,
+            "fontsize": 40,
             "primary_color": "&H00FFFFFF",     # Crisp White
             "highlight_color": "&H0000E6FF",   # Ultra Bright Gold/Yellow (&H00BBGGRR)
             "secondary_color": "&H00FFFFFF",
             "outline_color": "&H00000000",     # Deep Solid Black
-            "back_color": "&H80000000",
+            "back_color": "&H00000000",        # Pure Transparent (No Box)
             "bold": -1,
             "italic": 0,
             "uppercase": True,
-            "outline": 3.0,
-            "shadow": 1.5,
+            "outline": 3.2,
+            "shadow": 1.2,
             "alignment": 2, # Bottom Center
-            "margin_v": 360,
+            "margin_v": 300, # Clean lower-third position
             "words_per_group": 3,
             "animation": "pop",
             "has_emojis": True,
@@ -241,7 +241,7 @@ class CaptionStyler:
             base_fontsize = int(font_size_pref)
 
         # Scale by target video width relative to standard 1080p width
-        # Ensures captions look balanced across 19:6, 9:16, 1:1, etc.
+        # Ensures captions look balanced across 9:16, 1:1, etc.
         width_ratio = max(0.70, min(1.0, video_width / 1080.0))
         fontsize = max(26, int(round(base_fontsize * width_ratio)))
 

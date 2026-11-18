@@ -143,7 +143,7 @@ def init_sample_project():
         # Add hooks to each clip
         for c in sample_clips:
             c["packaging"] = ViralHookGenerator.generate_all(c["text"], c["category"], c["viral_score"])
-            c["aspect_ratio"] = "19:6" # Default aspect ratio 19:6 as requested
+            c["aspect_ratio"] = "9:16" # Default aspect ratio 9:16 for Shorts/Reels
             c["caption_style"] = "hormozi"
             c["rendered_video"] = None
 
@@ -186,7 +186,7 @@ class RenderClipRequest(BaseModel):
     clip_id: str
     start_time: float
     end_time: float
-    aspect_ratio: str = "19:6"   # Default 19:6
+    aspect_ratio: str = "9:16"   # Default 9:16 Shorts
     resolution: str = "1080p"    # 1080p, 2k, 4k, source
     caption_style: str = "hormozi"
     custom_captions: Optional[Dict[str, Any]] = None
@@ -195,7 +195,7 @@ class RenderClipRequest(BaseModel):
 
 class BatchRenderRequest(BaseModel):
     project_id: str
-    aspect_ratio: str = "19:6"
+    aspect_ratio: str = "9:16"
     resolution: str = "1080p"
     caption_style: str = "hormozi"
     remove_silence: bool = False
@@ -242,7 +242,7 @@ def health_check():
             "faster_whisper": True,
             "opencv_face_tracking": True,
             "ffmpeg_hardware_accel": True,
-            "default_aspect_ratio": "19:6"
+            "default_aspect_ratio": "9:16"
         }
     }
 
@@ -254,10 +254,9 @@ def get_progress():
 @app.get("/api/presets")
 def get_presets():
     return {
-        "default_aspect_ratio": "19:6",
+        "default_aspect_ratio": "9:16",
         "aspect_ratios": [
-            {"id": "19:6", "name": "19:6 Ultrawide Vertical", "badge": "DEFAULT", "desc": "Modern cinematic vertical banner"},
-            {"id": "9:16", "name": "9:16 Vertical", "badge": "POPULAR", "desc": "TikTok, YouTube Shorts, Reels"},
+            {"id": "9:16", "name": "9:16 Vertical", "badge": "DEFAULT", "desc": "YouTube Shorts, Instagram Reels, TikTok"},
             {"id": "16:9", "name": "16:9 Landscape", "badge": "WIDE", "desc": "Full YouTube, TV, Desktop"},
             {"id": "1:1", "name": "1:1 Square", "badge": "FEED", "desc": "Instagram Feed, X, LinkedIn"},
             {"id": "4:5", "name": "4:5 Portrait", "badge": "PORTRAIT", "desc": "Instagram Portrait Feed"}
@@ -311,7 +310,7 @@ def translate_project_to_english(project_id: str):
         c["crop_center_x"] = framing["dominant_x_ratio"]
         c["multi_speaker"] = framing["multi_speaker_detected"]
         c["packaging"] = ViralHookGenerator.generate_all(c["text"], c["category"], c["viral_score"])
-        c["aspect_ratio"] = "19:6"
+        c["aspect_ratio"] = "9:16"
         c["caption_style"] = "hormozi"
         c["rendered_video"] = None
 
@@ -567,14 +566,14 @@ def process_project_pipeline(project_id: str) -> Dict[str, Any]:
         transcript.get("words", []),
         total_video_duration=project.get("duration", 60.0),
         heatmap=project.get("heatmap", []),
-        max_clips=3
+        max_clips=1 # Pinpoint the single #1 most catchy viral climax clip
     )
 
-    clip_msg = f"Extracted top {len(clips)} highest-retention moments from YouTube audience replay graph!" if has_hm else f"Selected top {len(clips)} high-retention moments distributed across the podcast."
-    update_job_status(4, f"Found {len(clips)} viral moments!", 85, clip_msg)
+    clip_msg = f"Pinpointed the #1 highest-retention viral moment ('{clips[0]['packaging']['title'][:35] if clips and 'packaging' in clips[0] else 'Top Moment'}' - Score {clips[0]['viral_score'] if clips else 95}/100) for YouTube Shorts!"
+    update_job_status(4, "Found #1 Catchy Viral Moment!", 85, clip_msg)
 
     # Step 5: Face Framing & Packaging
-    update_job_status(5, "Running OpenCV face tracking & 19:6 reframing...", 88, "Applying Haar Cascade face detection with EMA pan smoothing for 19:6 default aspect ratio...")
+    update_job_status(5, "Running OpenCV face tracking & 9:16 reframing...", 88, "Applying Haar Cascade face detection with EMA pan smoothing for 9:16 Shorts aspect ratio...")
     total_c = len(clips)
     for idx, c in enumerate(clips, 1):
         framing = face_tracker_engine.analyze_video_framing(
@@ -591,7 +590,7 @@ def process_project_pipeline(project_id: str) -> Dict[str, Any]:
             c["category"],
             c["viral_score"]
         )
-        c["aspect_ratio"] = "19:6"
+        c["aspect_ratio"] = "9:16"
         c["caption_style"] = "hormozi"
         c["rendered_video"] = None
 
@@ -613,7 +612,7 @@ def process_project_pipeline(project_id: str) -> Dict[str, Any]:
 @app.post("/api/render-clip")
 def render_clip(req: RenderClipRequest):
     """
-    Renders high-quality short clip with custom aspect ratio (19:6 default, 9:16, 16:9, etc.),
+    Renders high-quality short clip with custom aspect ratio (9:16 default, 16:9, etc.),
     burns animated caption style, applies smart face reframing, and returns video URL.
     """
     if req.project_id not in PROJECTS_DB:
@@ -631,7 +630,7 @@ def render_clip(req: RenderClipRequest):
     elif req.resolution == "4k":
         base_h = 3840
 
-    cfg = VideoProcessor.ASPECT_RATIOS.get(req.aspect_ratio, VideoProcessor.ASPECT_RATIOS["19:6"])
+    cfg = VideoProcessor.ASPECT_RATIOS.get(req.aspect_ratio, VideoProcessor.ASPECT_RATIOS["9:16"])
     target_w = int(round((base_h * cfg["w_ratio"]) / cfg["h_ratio"])) if cfg["h_ratio"] >= cfg["w_ratio"] else base_h
     target_h = base_h if cfg["h_ratio"] >= cfg["w_ratio"] else int(round((base_h * cfg["h_ratio"]) / cfg["w_ratio"]))
     target_w = target_w - (target_w % 2)

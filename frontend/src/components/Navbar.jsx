@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 
 export default function Navbar({
-  aspectRatio = "19:6",
+  aspectRatio = "9:16",
   onSelectAspectRatio,
   resolution = "1080p",
   onSelectResolution,
@@ -24,8 +24,7 @@ export default function Navbar({
   onToggleTheme
 }) {
   const aspectRatios = [
-    { id: "19:6", label: "19:6", badge: "DEFAULT", desc: "Ultrawide Vertical" },
-    { id: "9:16", label: "9:16", badge: "SHORTS", desc: "Vertical" },
+    { id: "9:16", label: "9:16", badge: "DEFAULT", desc: "Shorts / Reels" },
     { id: "16:9", label: "16:9", badge: "WIDE", desc: "Landscape" },
     { id: "1:1", label: "1:1", badge: "FEED", desc: "Square" },
     { id: "4:5", label: "4:5", badge: "PORTRAIT", desc: "Portrait" },

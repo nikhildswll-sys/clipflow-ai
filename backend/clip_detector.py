@@ -63,7 +63,7 @@ class ViralClipDetector:
         "yeh sach koi nahi", "asli wajah yeh", "sabse badi galti"
     ]
 
-    def __init__(self, min_clip_duration: float = 20.0, max_clip_duration: float = 65.0, target_clips_count: int = 3):
+    def __init__(self, min_clip_duration: float = 25.0, max_clip_duration: float = 58.0, target_clips_count: int = 1):
         self.min_duration = min_clip_duration
         self.max_duration = max_clip_duration
         self.target_clips = target_clips_count
@@ -371,11 +371,24 @@ class ViralClipDetector:
         intro_fluff = ["welcome to", "hey guys", "walking into", "seen any contestants", "greetings to", "let's go brother"]
         fluff_penalty = 25.0 if any(f in lowered for f in intro_fluff) else 0.0
 
-        # Climax & High-Stakes Bonus (Fights, Censorship, Secrets, Huge Budgets)
+        # Context & Coherence Filter (Must have clear head and tail, not start mid-sentence)
+        first_words = lowered.split()[:3]
+        weak_starters = ["and", "or", "but", "so", "then", "because", "to", "it was", "at", "with", "also", "if you want"]
+        coherence_penalty = 20.0 if (first_words and first_words[0] in weak_starters) else 0.0
+
+        # Complete thought conclusion bonus (Never cut mid-thought)
+        complete_ending = text.strip()[-1] in ".!?" if text.strip() else False
+        ending_bonus = 7.0 if complete_ending else -12.0
+
+        # Core Topic Clarity & High-Stakes Bonus (GTA, Sci-Fi, Mysteries, Fights, Secrets)
+        topic_cues = ["gta", "game", "sci-fi", "space", "planet", "story", "secret", "hidden", "truth", "money", "crore", "crores", "fight", "censor", "emergency", "mystery", "universe", "ai", "future"]
+        topic_bonus = min(15.0, sum(3.5 for tc in topic_cues if tc in lowered))
+
+        # Climax cues
         climax_cues = ["fight", "censor", "emergency", "delay", "secret", "hidden", "camera", "crore", "crores", "100 crore", "300 crore", "medical", "kalesh", "lafda", "badmashi", "pehlwan"]
         climax_bonus = min(15.0, sum(3.0 for c in climax_cues if c in lowered))
 
-        raw_total = hook_score + emotion_score + pacing_score + punchline_score + shareability - fluff_penalty + climax_bonus
+        raw_total = hook_score + emotion_score + pacing_score + punchline_score + shareability - fluff_penalty - coherence_penalty + climax_bonus + ending_bonus + topic_bonus
         total = int(round(raw_total))
         return {
             "total_score": max(55, min(99, total)),

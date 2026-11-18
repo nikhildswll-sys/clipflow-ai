@@ -148,7 +148,7 @@ export default function IngestModal({
 
               <div className="flex justify-between text-[11px] text-slate-500 font-medium">
                 <span>Step {currentStep} of 5</span>
-                <span>Aspect Ratio: 19:6 Default • Lossless Quality</span>
+                <span>Aspect Ratio: 9:16 Shorts Default • Lossless Quality</span>
               </div>
             </div>
 
@@ -159,7 +159,7 @@ export default function IngestModal({
                 { step: 2, label: "2. Audio Stream Extraction (PCM)", done: currentStep > 2, active: currentStep === 2 },
                 { step: 3, label: "3. Faster-Whisper Transcription", done: currentStep > 3, active: currentStep === 3 },
                 { step: 4, label: "4. Viral Moment & Hook AI Scan", done: currentStep > 4, active: currentStep === 4 },
-                { step: 5, label: "5. Face Tracking & 19:6 Framing", done: currentStep >= 5 && progressPercent === 100, active: currentStep === 5 && progressPercent < 100 },
+                { step: 5, label: "5. Face Tracking & 9:16 Framing", done: currentStep >= 5 && progressPercent === 100, active: currentStep === 5 && progressPercent < 100 },
               ].map((st) => (
                 <div
                   key={st.step}
@@ -269,7 +269,7 @@ export default function IngestModal({
                       Audience Retention & Replay AI
                     </div>
                     <p className="text-slate-600 leading-relaxed">
-                      Fetches YouTube's actual Most Replayed heatmap to pinpoint the 2–3 most engaging moments across the full episode, with automatic 19:6 reframing and animated captions.
+                      Fetches YouTube's actual Most Replayed heatmap to pinpoint the most engaging viral moment across the full episode, with automatic 9:16 Shorts reframing and animated captions.
                     </p>
                   </div>
 

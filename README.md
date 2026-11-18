@@ -20,10 +20,9 @@
 - **Smart Sentence Boundary Snapping**: Never cuts words, sentences, or reactions mid-thought.
 
 ### 2. 🎬 Intelligent Auto-Framing & Video Editing
-- **Default Aspect Ratio**: **19:6** (Ultrawide Cinematic Vertical Banner) as requested.
+- **Default Aspect Ratio**: **9:16** (Vertical Shorts/Reels/TikTok) optimized for high retention.
 - **Customizable Aspect Ratios**:
-  - `19:6` Ultrawide Vertical (Cinematic Banner) — *Default*
-  - `9:16` Vertical (TikTok, Shorts, Reels)
+  - `9:16` Vertical (TikTok, Shorts, Reels) — *Default*
   - `16:9` Landscape (Full YouTube, TV, Desktop)
   - `1:1` Square (Instagram Feed, X/Twitter, LinkedIn)
   - `4:5` Portrait (Instagram Portrait Feed)

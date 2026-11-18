@@ -10,7 +10,7 @@ class SmartFaceTracker:
     """
     OpenCV-powered face detection and speaker tracking for intelligent auto-reframing.
     Tracks face coordinates over time, calculates smoothed pan trajectory,
-    and produces crop parameters for 19:6, 9:16, 16:9, 1:1, 4:5 aspect ratios.
+    and produces crop parameters for 9:16, 16:9, 1:1, 4:5 aspect ratios.
     """
 
     def __init__(self):

@@ -21,7 +21,7 @@ import {
 export default function StudioPlayer({
   project,
   clip,
-  aspectRatio = "19:6",
+  aspectRatio = "9:16",
   resolution = "1080p",
   captionStyle = "hormozi",
   customCaptions = {},
@@ -123,8 +123,6 @@ export default function StudioPlayer({
   // Calculate container aspect ratio dimensions for preview frame
   const getAspectRatioClasses = () => {
     switch (aspectRatio) {
-      case "19:6":
-        return "aspect-[6/19] max-h-[580px] w-auto";
       case "9:16":
         return "aspect-[9/16] max-h-[580px] w-auto";
       case "16:9":
@@ -134,7 +132,7 @@ export default function StudioPlayer({
       case "4:5":
         return "aspect-[4/5] max-h-[560px] w-auto";
       default:
-        return "aspect-[6/19] max-h-[580px] w-auto";
+        return "aspect-[9/16] max-h-[580px] w-auto";
     }
   };
 
@@ -168,7 +166,7 @@ export default function StudioPlayer({
 
     const uppercase = customCaptions.uppercase ?? (captionStyle !== "minimal" && captionStyle !== "cinematic");
     const font = customCaptions.fontname || (captionStyle === "podcast" ? "Montserrat" : captionStyle === "minimal" ? "Poppins" : "Anton");
-    const boxStyle = customCaptions.box_style || "pill";
+    const boxStyle = customCaptions.box_style || "none";
     const highlightColor = customCaptions.highlight_color || (captionStyle === "mrbeast" ? "#00FF66" : "#FFDE00");
     const fontSizeClass = getFontSizeClass();
 
@@ -351,9 +349,9 @@ export default function StudioPlayer({
           <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-indigo-50 border border-indigo-100 text-indigo-700 text-xs font-semibold">
             <Layers className="w-3.5 h-3.5 text-indigo-600" />
             <span>Ratio: {aspectRatio}</span>
-            {aspectRatio === "19:6" && (
+            {aspectRatio === "9:16" && (
               <span className="px-1.5 py-0.2 rounded text-[9px] bg-indigo-600 text-white font-bold">
-                DEFAULT
+                SHORTS DEFAULT
               </span>
             )}
           </div>

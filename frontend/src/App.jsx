@@ -40,11 +40,12 @@ export default function App() {
   const [activeClipId, setActiveClipId] = useState(null);
 
   // Settings
-  const [aspectRatio, setAspectRatio] = useState("19:6"); // Default 19:6 as requested
+  const [aspectRatio, setAspectRatio] = useState("9:16"); // Default 9:16 Shorts/Reels
   const [resolution, setResolution] = useState("1080p");
   const [captionStyle, setCaptionStyle] = useState("hormozi");
   const [customCaptions, setCustomCaptions] = useState({
     position: "bottom",
+    box_style: "none", // Pure clean text with no box background
     font_size: "medium",
     words_per_group: 3,
     highlight_color: "#FFDE00",

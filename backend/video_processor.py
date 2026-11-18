@@ -9,7 +9,7 @@ logger = logging.getLogger("VideoProcessor")
 class VideoProcessor:
     """
     High-performance FFmpeg rendering engine:
-    - Smart framing & aspect ratios (19:6 default, 9:16, 16:9, 1:1, 4:5)
+    - Smart framing & aspect ratios (9:16 Shorts default, 16:9, 1:1, 4:5)
     - Face tracking center alignment
     - 1080p, 2K, 4K resolution rendering
     - Zero quality degradation (CRF 18 visually lossless)
@@ -18,8 +18,7 @@ class VideoProcessor:
     """
 
     ASPECT_RATIOS = {
-        "19:6": {"w_ratio": 6, "h_ratio": 19, "desc": "19:6 Ultrawide Vertical (Default)"},
-        "9:16": {"w_ratio": 9, "h_ratio": 16, "desc": "9:16 Vertical (TikTok/Shorts/Reels)"},
+        "9:16": {"w_ratio": 9, "h_ratio": 16, "desc": "9:16 Vertical (Shorts/Reels/TikTok)"},
         "16:9": {"w_ratio": 16, "h_ratio": 9, "desc": "16:9 Landscape (YouTube/TV)"},
         "1:1":  {"w_ratio": 1, "h_ratio": 1, "desc": "1:1 Square (Instagram/X)"},
         "4:5":  {"w_ratio": 4, "h_ratio": 5, "desc": "4:5 Portrait (IG Feed/Facebook)"}
@@ -65,7 +64,7 @@ class VideoProcessor:
         output_video: str,
         start_time: float,
         end_time: float,
-        aspect_ratio: str = "19:6",
+        aspect_ratio: str = "9:16",
         resolution: str = "1080p",
         ass_subtitle_path: Optional[str] = None,
         crop_center_x: float = 0.5,
@@ -82,7 +81,7 @@ class VideoProcessor:
         duration = max(0.5, end_time - start_time)
 
         # Target dimensions calculation
-        aspect_ratio = aspect_ratio if aspect_ratio in cls.ASPECT_RATIOS else "19:6"
+        aspect_ratio = aspect_ratio if aspect_ratio in cls.ASPECT_RATIOS else "9:16"
         cfg = cls.ASPECT_RATIOS[aspect_ratio]
         w_ratio = cfg["w_ratio"]
         h_ratio = cfg["h_ratio"]
@@ -121,7 +120,7 @@ class VideoProcessor:
             # Source matches target aspect ratio closely: just scale
             vf_filters.append(f"scale={target_w}:{target_h}:flags=lanczos")
         elif src_aspect > target_aspect:
-            # Source is wider than target (e.g. 16:9 source to 9:16 or 19:6 target)
+            # Source is wider than target (e.g. 16:9 source to 9:16 vertical target)
             # Crop horizontally around crop_center_x
             crop_w = int(src_h * target_aspect)
             max_x = src_w - crop_w
