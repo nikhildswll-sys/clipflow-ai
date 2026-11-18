@@ -22,25 +22,24 @@ class AutoPilotService:
     # --- GTA 6 LIVE STREAM SNIPER POOL (Indian & USA/Global High-Watching Streamers) ---
     GTA6_STREAM_TOPICS = [
         # USA & Global Streamer Titans
-        {"category": "GTA 6 Stream", "topic": "IShowSpeed GTA 6 live stream reaction", "hook": "SPEED WENT CRAZY ON GTA 6 🤯", "slice": "*00:01:45-00:02:20"},
-        {"category": "GTA 6 Stream", "topic": "Kai Cenat GTA 6 gameplay reaction live stream", "hook": "KAI CENAT CANNOT BELIEVE THIS... 😱", "slice": "*00:02:00-00:02:35"},
-        {"category": "GTA 6 Stream", "topic": "xQc GTA 6 trailer gameplay reaction live stream", "hook": "xQc SPOTS INSANE GTA 6 DETAIL 🔍", "slice": "*00:01:30-00:02:05"},
-        {"category": "GTA 6 Stream", "topic": "Adin Ross GTA 6 gameplay reaction live stream", "hook": "ADIN ROSS GTA 6 STREAM MOMENT 💀", "slice": "*00:01:40-00:02:15"},
-        {"category": "GTA 6 Stream", "topic": "Jynxzi GTA 6 trailer reaction live stream", "hook": "JYNXZI SCREAMS AT GTA 6 🚨", "slice": "*00:01:25-00:02:00"},
-        {"category": "GTA 6 Stream", "topic": "Asmongold GTA 6 graphics breakdown live stream", "hook": "THE TRUTH ABOUT GTA 6 GRAPHICS 👁️", "slice": "*00:02:15-00:02:50"},
-        {"category": "GTA 6 Stream", "topic": "FlightReacts GTA 6 trailer reaction live stream", "hook": "FLIGHTREACTS SEES GTA 6 😂", "slice": "*00:01:35-00:02:10"},
+        {"category": "GTA 6 Stream", "streamer": "IShowSpeed", "topic": "IShowSpeed GTA 6 trailer reaction", "hook": "SPEED WENT CRAZY ON GTA 6 🤯", "slice": "*00:01:45-00:02:20"},
+        {"category": "GTA 6 Stream", "streamer": "Kai Cenat", "topic": "Kai Cenat GTA 6 reaction", "hook": "KAI CENAT CANNOT BELIEVE THIS... 😱", "slice": "*00:02:00-00:02:35"},
+        {"category": "GTA 6 Stream", "streamer": "xQc", "topic": "xQc GTA 6 trailer reaction", "hook": "xQc SPOTS INSANE GTA 6 DETAIL 🔍", "slice": "*00:01:30-00:02:05"},
+        {"category": "GTA 6 Stream", "streamer": "Adin Ross", "topic": "Adin Ross GTA 6 trailer reaction", "hook": "ADIN ROSS GTA 6 STREAM MOMENT 💀", "slice": "*00:01:40-00:02:15"},
+        {"category": "GTA 6 Stream", "streamer": "Jynxzi", "topic": "Jynxzi GTA 6 trailer reaction", "hook": "JYNXZI SCREAMS AT GTA 6 🚨", "slice": "*00:01:25-00:02:00"},
+        {"category": "GTA 6 Stream", "streamer": "Asmongold", "topic": "Asmongold GTA 6 graphics breakdown", "hook": "THE TRUTH ABOUT GTA 6 GRAPHICS 👁️", "slice": "*00:02:15-00:02:50"},
+        {"category": "GTA 6 Stream", "streamer": "FlightReacts", "topic": "FlightReacts GTA 6 trailer reaction", "hook": "FLIGHTREACTS SEES GTA 6 😂", "slice": "*00:01:35-00:02:10"},
 
         # Indian Gaming Royalty (Highest Watching Live)
-        {"category": "GTA 6 Stream", "topic": "Techno Gamerz GTA 6 live reaction gameplay stream", "hook": "TECHNO GAMERZ SEES GTA 6 🌴", "slice": "*00:01:50-00:02:25"},
-        {"category": "GTA 6 Stream", "topic": "CarryisLive CarryMinati GTA 6 reaction live stream", "hook": "CARRYMINATI GTA 6 REACTION 🔥", "slice": "*00:02:00-00:02:35"},
-        {"category": "GTA 6 Stream", "topic": "Total Gaming Ajju007 GTA 6 reaction live stream", "hook": "TOTAL GAMING GTA 6 REACTION 💥", "slice": "*00:01:40-00:02:15"},
-        {"category": "GTA 6 Stream", "topic": "Mythpat GTA 6 reaction live stream funny moments", "hook": "MYTHPAT GTA 6 FUNNIEST MOMENT 😂", "slice": "*00:01:30-00:02:05"},
-        {"category": "GTA 6 Stream", "topic": "Mortal Scout GTA 6 gameplay reaction live stream", "hook": "MORTAL & SCOUT GTA 6 SHOCK 🚨", "slice": "*00:01:45-00:02:20"},
-        {"category": "GTA 6 Stream", "topic": "Triggered Insaan Live GTA 6 reaction stream", "hook": "TRIGGERED INSAAN GTA 6 REACTION 🤯", "slice": "*00:01:35-00:02:10"},
+        {"category": "GTA 6 Stream", "streamer": "Techno Gamerz", "topic": "Techno Gamerz GTA 6 trailer reaction", "hook": "TECHNO GAMERZ SEES GTA 6 🌴", "slice": "*00:01:50-00:02:25"},
+        {"category": "GTA 6 Stream", "streamer": "CarryisLive", "topic": "CarryisLive WE ARE NOT READY FOR GTA VI", "hook": "CARRYMINATI GTA 6 REACTION 🔥", "slice": "*00:02:00-00:02:35"},
+        {"category": "GTA 6 Stream", "streamer": "Total Gaming", "topic": "Total Gaming Ajju007 GTA 6 reaction", "hook": "TOTAL GAMING GTA 6 REACTION 💥", "slice": "*00:01:40-00:02:15"},
+        {"category": "GTA 6 Stream", "streamer": "Mythpat", "topic": "Mythpat GTA 6 trailer reaction", "hook": "MYTHPAT GTA 6 FUNNIEST MOMENT 😂", "slice": "*00:01:30-00:02:05"},
+        {"category": "GTA 6 Stream", "streamer": "Mortal", "topic": "Mortal Scout GTA 6 trailer reaction", "hook": "MORTAL GTA 6 REACTION 🚨", "slice": "*00:01:45-00:02:20"},
+        {"category": "GTA 6 Stream", "streamer": "Triggered Insaan", "topic": "Live Insaan GTA 6 reaction", "hook": "LIVE INSAAN GTA 6 REACTION 🤯", "slice": "*00:01:35-00:02:10"},
+        {"category": "GTA 6 Stream", "streamer": "Ducky Bhai", "topic": "Ducky Bhai GTA 6 trailer reaction", "hook": "DUCKY BHAI GTA 6 REACTION 😱", "slice": "*00:01:30-00:02:05"},
 
         # Viral Live Stream Events & Highest Watching Clips
-        {"category": "GTA 6 Stream", "topic": "GTA 6 live stream high watching top streamer reaction", "hook": "THIS GTA 6 STREAM BROKE YOUTUBE 🚀", "slice": "*00:01:30-00:02:05"},
-        {"category": "GTA 6 Stream", "topic": "GTA 6 gameplay live reveal chat reaction", "hook": "THE WHOLE CHAT WENT INSANE... 💬", "slice": "*00:01:20-00:01:55"},
         {"category": "GTA 6 Stream", "topic": "GTA 6 realistic police AI behavior and car crash deformation physics 4K", "hook": "THIS POLICE AI IS TERRIFYING... 🚨", "slice": "*00:01:15-00:01:50"},
         {"category": "GTA 6 Stream", "topic": "GTA 6 Vice City graphics comparison vs real life Miami 4K gameplay", "hook": "VICE CITY VS REAL LIFE 🌴", "slice": "*00:01:30-00:02:05"},
         {"category": "GTA 6 Stream", "topic": "GTA 6 map size comparison vs GTA 5 secret locations breakdown", "hook": "THE MAP IS 3X BIGGER THAN GTA 5 🗺️", "slice": "*00:01:20-00:01:55"},

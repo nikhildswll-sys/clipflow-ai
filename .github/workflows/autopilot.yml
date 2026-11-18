@@ -40,7 +40,7 @@ jobs:
 
       - name: Install Python Packages
         run: |
-          pip install --no-cache-dir yt-dlp bgutil-ytdlp-pot-provider google-api-python-client google-auth-oauthlib google-auth faster-whisper
+          pip install --no-cache-dir yt-dlp "bgutil-ytdlp-pot-provider==0.8.1" google-api-python-client google-auth-oauthlib google-auth faster-whisper
 
       - name: Start YouTube BotGuard PO-Token Provider (Cloud Anti-Bot Bypass)
         continue-on-error: true
