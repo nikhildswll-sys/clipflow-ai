@@ -76,10 +76,10 @@ def main():
                 return True
         return False
 
-    from datetime import datetime, timezone
-    now_utc = datetime.now(timezone.utc)
-    is_before_midnight = (now_utc.year == 2026 and now_utc.month == 11 and now_utc.day == 18 and (now_utc.hour < 18 or (now_utc.hour == 18 and now_utc.minute < 30)))
-    tgg_lock = is_before_midnight or mode in ["tgg_only", "tgg"]
+    from datetime import datetime, timezone, timedelta
+    ist_now = datetime.now(timezone.utc) + timedelta(hours=5, minutes=30)
+    # TGG exclusive lock until 12:00 Midnight IST tonight (Nov 18, 2026)
+    tgg_lock = (ist_now.date() == datetime(2026, 11, 18).date()) or mode in ["tgg_only", "tgg"]
 
     target_vid_override = os.environ.get("TARGET_VIDEO_ID", "").strip()
     candidate_items = []
@@ -112,6 +112,9 @@ def main():
             sys.exit(1)
     elif tgg_lock:
         logger.info("🎯 TGG EXCLUSIVE MODE ACTIVE (All other topics paused until 12 Midnight IST): Targeting TGG GTA 6 exclusively!")
+        tgg_channel_id = "UC72PuhDwKtZ5MikpGNhPAtA"
+        tgg_live_id = "xMXp80Cntxw"
+
         tgg_hooks = [
             "TGG PLAYS GTA 6 🔥",
             "TGG GTA 6 FIRST LOOK 🌴",
@@ -121,15 +124,12 @@ def main():
             "TGG REACTS TO GTA 6 🌴"
         ]
         tgg_slices = [
-            "*00:04:15-00:04:50",
-            "*00:08:30-00:09:05",
-            "*00:13:00-00:13:35",
-            "*00:17:45-00:18:20",
-            "*00:22:15-00:22:50",
-            "*00:27:00-00:27:35",
-            "*00:32:30-00:33:05",
-            "*00:37:00-00:37:35",
-            "*00:42:15-00:42:50"
+            "*00:03:30-00:04:05",
+            "*00:06:15-00:06:50",
+            "*00:09:00-00:09:35",
+            "*00:12:15-00:12:50",
+            "*00:15:30-00:16:05",
+            "*00:19:00-00:19:35"
         ]
         available_hooks = [h for h in tgg_hooks if not any(h.lower() in rt for rt in recent_titles)]
         base_hook = random.choice(available_hooks) if available_hooks else random.choice(tgg_hooks)
@@ -146,7 +146,7 @@ def main():
 
         try:
             search_res = youtube.search().list(
-                q="TGG GTA 6",
+                channelId=tgg_channel_id,
                 part="snippet",
                 type="video",
                 order="date",
@@ -156,18 +156,21 @@ def main():
             logger.warning(f"TGG Search notice: {e}")
             search_res = None
 
-        if not search_res or not search_res.get("items"):
-            logger.error("No TGG videos found via official API.")
-            sys.exit(1)
-
-        for it in search_res.get("items", []):
-            ch_name = it["snippet"].get("channelTitle", "").strip().lower()
-            if "tgg" in ch_name:
+        candidate_items = []
+        if search_res and search_res.get("items"):
+            for it in search_res["items"]:
                 it["_streamer_verified"] = True
                 candidate_items.append(it)
 
-        if not candidate_items:
-            candidate_items = search_res.get("items", [])[:3]
+        # Always include active live stream as candidate
+        candidate_items.insert(0, {
+            "id": {"videoId": tgg_live_id},
+            "snippet": {
+                "title": "GTA 6 LAUNCH STREAM! Playing GTA 6 for the First Time",
+                "channelTitle": "TGG"
+            },
+            "_streamer_verified": True
+        })
     else:
         if mode in ["stream_only", "gta6_only"]:
             logger.info("🎮 GTA 6 ALL-DAY STREAM SNIPER ACTIVE: Targeting Top Indian & Global Streamers!")
@@ -468,9 +471,9 @@ def main():
         "-map", "[final_v]",
         "-map", "0:a?",
         "-aspect", "9:16",
-        "-c:v", "libx264", "-preset", "veryfast", "-crf", "20",
+        "-c:v", "libx264", "-pix_fmt", "yuv420p", "-preset", "veryfast", "-crf", "20",
         "-b:v", "6M", "-maxrate", "10M", "-bufsize", "12M",
-        "-c:a", "aac", "-b:a", "192k",
+        "-c:a", "aac", "-b:a", "192k", "-ar", "44100", "-ac", "2",
         "-movflags", "+faststart",
         "-t", "35",
         rendered_video
