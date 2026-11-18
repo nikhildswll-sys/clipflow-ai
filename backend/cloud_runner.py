@@ -34,18 +34,56 @@ def main():
         logger.error("No YouTube token available. Run local authentication first!")
         sys.exit(1)
 
-    # 2. GTA 6 All-Day Live Stream Sniper Mode
-    # If GTA6_DAY_MODE is true (default for GTA 6 launch day), 100% of uploads target
-    # Top Indian & Global streamers (Speed, Kai, Techno Gamerz, Carry, Total Gaming, xQc) with Highest Watching!
+    # 2. Authenticate official YouTube API
+    from googleapiclient.discovery import build
+    from google.oauth2.credentials import Credentials
+
+    creds = Credentials.from_authorized_user_file(token_file)
+    youtube = build("youtube", "v3", credentials=creds)
+
+    # 3. Fetch Recent Channel Uploads for Bulletproof Anti-Duplicate Protection
+    recent_titles = []
+    try:
+        channel_res = youtube.channels().list(mine=True, part="contentDetails").execute()
+        if channel_res.get("items"):
+            uploads_id = channel_res["items"][0]["contentDetails"]["relatedPlaylists"]["uploads"]
+            playlist_res = youtube.playlistItems().list(playlistId=uploads_id, part="snippet", maxResults=30).execute()
+            for it in playlist_res.get("items", []):
+                sn = it.get("snippet", {})
+                t_title = sn.get("title", "").lower()
+                t_desc = sn.get("description", "").lower()
+                recent_titles.append(t_title)
+                recent_titles.append(t_desc)
+            logger.info(f"Retrieved {len(playlist_res.get('items', []))} recent uploads from channel for anti-duplicate check.")
+    except Exception as e:
+        logger.warning(f"Recent uploads check notice: {e}")
+
+    # 4. GTA 6 All-Day Live Stream Sniper Mode with Dynamic Anti-Duplicate Filter
     from autopilot import AutoPilotService
     service = AutoPilotService()
     
     gta6_day_mode = os.environ.get("GTA6_DAY_MODE", "true").lower() in ["true", "1", "yes"]
 
+    def is_already_uploaded(topic_dict):
+        h = topic_dict.get("hook", "").replace("'", "").lower().strip()
+        h_words = [w for w in h.split() if len(w) > 3][:3]
+        for rt in recent_titles:
+            if h in rt:
+                return True
+            if h_words and all(w in rt for w in h_words):
+                return True
+        return False
+
     if gta6_day_mode:
         logger.info("🎮 GTA 6 ALL-DAY STREAM SNIPER ACTIVE: Targeting Top Indian & Global Streamers with High Watching!")
         stream_pool = getattr(service, "GTA6_STREAM_TOPICS", service.topics)
-        topic_item = random.choice(stream_pool)
+        unseen_pool = [t for t in stream_pool if not is_already_uploaded(t)]
+        if unseen_pool:
+            logger.info(f"Anti-duplicate filter: {len(unseen_pool)} unseen streamer topics available (filtered out {len(stream_pool) - len(unseen_pool)} recent).")
+            topic_item = random.choice(unseen_pool)
+        else:
+            logger.info("All streamer topics have been used recently; cycling pool.")
+            topic_item = random.choice(stream_pool)
     else:
         category_weights = {
             "GTA 6": 0.40,
@@ -59,7 +97,13 @@ def main():
             weights = [category_weights[c] for c in available_cats]
             chosen_cat = random.choices(available_cats, weights=weights, k=1)[0]
             cat_topics = [t for t in service.topics if t.get("category") == chosen_cat]
-            topic_item = random.choice(cat_topics) if cat_topics else random.choice(service.topics)
+            unseen_cat = [t for t in cat_topics if not is_already_uploaded(t)]
+            if unseen_cat:
+                topic_item = random.choice(unseen_cat)
+            elif cat_topics:
+                topic_item = random.choice(cat_topics)
+            else:
+                topic_item = random.choice(service.topics)
         except Exception as e:
             logger.warning(f"Random selection fallback: {e}. Picking uniform random topic.")
             topic_item = random.choice(service.topics)
@@ -69,13 +113,6 @@ def main():
     category = topic_item.get("category", "GTA 6")
 
     logger.info(f"Targeting Streamer / Event: '{query}' ({category}) | Hook: '{hook}'")
-
-    # 3. Search YouTube for top video using OFFICIAL YouTube API (100% immune to bot-checks)
-    from googleapiclient.discovery import build
-    from google.oauth2.credentials import Credentials
-
-    creds = Credentials.from_authorized_user_file(token_file)
-    youtube = build("youtube", "v3", credentials=creds)
 
     search_query = f"{query} -#shorts -shorts"
     logger.info(f"Searching official YouTube API for full long-form video (16:9): '{search_query}'...")
@@ -113,10 +150,22 @@ def main():
         logger.error(f"No videos found via official API for {query}")
         sys.exit(1)
 
-    item = search_res["items"][0]
-    vid = item["id"]["videoId"]
+    # Select first video from search that has not already been used
+    selected_item = None
+    for it in search_res.get("items", []):
+        v_id = it["id"].get("videoId", "")
+        if any(v_id in rt for rt in recent_titles):
+            logger.info(f"Skipping already-clipped video: {it['snippet']['title']} ({v_id})")
+            continue
+        selected_item = it
+        break
+
+    if not selected_item:
+        selected_item = search_res["items"][0]
+
+    vid = selected_item["id"]["videoId"]
     yt_url = f"https://www.youtube.com/watch?v={vid}"
-    title = item["snippet"]["title"]
+    title = selected_item["snippet"]["title"]
     logger.info(f"Target video found via Official API: {title} ({yt_url})")
 
     # 4. Download segment from the meat of the long video
@@ -254,7 +303,7 @@ def main():
     upload_res = YouTubeUploader.upload_short(
         video_path=rendered_video,
         title=f"{hook} {category} #Shorts",
-        description=f"{query}\n\nAuto-curated by ClipFlow AI.\n#Shorts #Viral #Gaming #GTA6 #{category.replace(' ', '')}",
+        description=f"{query}\n\nSource: {yt_url} [ID: {vid}]\nAuto-curated by ClipFlow AI.\n#Shorts #Viral #Gaming #GTA6 #{category.replace(' ', '')}",
         tags=["#Shorts", "#GTA6", "#Gaming", "#Viral", "#Trending"],
         privacy_status="public",
         client_secrets_path=secret_file
