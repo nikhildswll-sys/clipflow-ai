@@ -15,11 +15,6 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Fast System & Fonts Setup
-        run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y --no-install-recommends ffmpeg fonts-dejavu-core
-
       - name: Set up Python 3.11
         uses: actions/setup-python@v5
         with:
@@ -29,6 +24,12 @@ jobs:
         uses: denoland/setup-deno@v1
         with:
           deno-version: v2.x
+
+      - name: Fast System & Fonts Setup
+        run: |
+          sudo systemctl stop unattended-upgrades 2>/dev/null || true
+          sudo DEBIAN_FRONTEND=noninteractive apt-get update -qq
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends ffmpeg fonts-dejavu-core
 
       - name: Install Python Packages
         run: |
