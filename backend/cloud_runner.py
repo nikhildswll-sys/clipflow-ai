@@ -33,34 +33,41 @@ def main():
         logger.error("No YouTube token available. Run local authentication first!")
         sys.exit(1)
 
-    # 2. Pick current viral topic using Smart Weighted Randomization
-    # 40% GTA 6 (High Search Volume) + 60% Rich Mix (Podcasts, Sci-Fi, History, Kids/Wonders)
+    # 2. GTA 6 All-Day Live Stream Sniper Mode
+    # If GTA6_DAY_MODE is true (default for GTA 6 launch day), 100% of uploads target
+    # Top Indian & Global streamers (Speed, Kai, Techno Gamerz, Carry, Total Gaming, xQc) with Highest Watching!
     from autopilot import AutoPilotService
     service = AutoPilotService()
     
-    category_weights = {
-        "GTA 6": 0.40,
-        "Podcast": 0.20,
-        "Sci-Fi": 0.15,
-        "History": 0.15,
-        "Wonders": 0.10
-    }
+    gta6_day_mode = os.environ.get("GTA6_DAY_MODE", "true").lower() in ["true", "1", "yes"]
 
-    try:
-        available_cats = list(category_weights.keys())
-        weights = [category_weights[c] for c in available_cats]
-        chosen_cat = random.choices(available_cats, weights=weights, k=1)[0]
-        cat_topics = [t for t in service.topics if t.get("category") == chosen_cat]
-        topic_item = random.choice(cat_topics) if cat_topics else random.choice(service.topics)
-    except Exception as e:
-        logger.warning(f"Random selection fallback: {e}. Picking uniform random topic.")
-        topic_item = random.choice(service.topics)
+    if gta6_day_mode:
+        logger.info("🎮 GTA 6 ALL-DAY STREAM SNIPER ACTIVE: Targeting Top Indian & Global Streamers with High Watching!")
+        stream_pool = getattr(service, "GTA6_STREAM_TOPICS", service.topics)
+        topic_item = random.choice(stream_pool)
+    else:
+        category_weights = {
+            "GTA 6": 0.40,
+            "Podcast": 0.20,
+            "Sci-Fi": 0.15,
+            "History": 0.15,
+            "Wonders": 0.10
+        }
+        try:
+            available_cats = list(category_weights.keys())
+            weights = [category_weights[c] for c in available_cats]
+            chosen_cat = random.choices(available_cats, weights=weights, k=1)[0]
+            cat_topics = [t for t in service.topics if t.get("category") == chosen_cat]
+            topic_item = random.choice(cat_topics) if cat_topics else random.choice(service.topics)
+        except Exception as e:
+            logger.warning(f"Random selection fallback: {e}. Picking uniform random topic.")
+            topic_item = random.choice(service.topics)
 
     query = topic_item["topic"]
     hook = topic_item.get("hook", "WAIT FOR IT... 🤯")
-    category = topic_item.get("category", "Trending")
+    category = topic_item.get("category", "GTA 6")
 
-    logger.info(f"Randomly Selected Viral Topic: '{query}' ({category}) | Hook: '{hook}'")
+    logger.info(f"Targeting Streamer / Event: '{query}' ({category}) | Hook: '{hook}'")
 
     # 3. Search YouTube for top video using OFFICIAL YouTube API (100% immune to bot-checks)
     from googleapiclient.discovery import build
