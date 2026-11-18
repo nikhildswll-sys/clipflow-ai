@@ -224,6 +224,7 @@ def main():
         [
             "yt-dlp",
             "--remote-components", "ejs:github",
+            "--socket-timeout", "20",
             "--extractor-args", "youtube:player_client=web,tv",
             "--format-sort", fmt_sort,
             "-f", fmt_spec,
@@ -236,6 +237,7 @@ def main():
         [
             "yt-dlp",
             "--remote-components", "ejs:github",
+            "--socket-timeout", "20",
             "--extractor-args", "youtube:player_client=web_creator,tv",
             "--format-sort", fmt_sort,
             "-f", fmt_spec,
@@ -248,6 +250,7 @@ def main():
         [
             "yt-dlp",
             "--remote-components", "ejs:github",
+            "--socket-timeout", "20",
             "--extractor-args", "youtube:player_client=ios,mweb",
             "--format-sort", fmt_sort,
             "-f", fmt_spec,
@@ -324,7 +327,7 @@ def main():
         rel_ass = ass_rel_path.replace("\\", "/")
         filter_complex = (
             "[0:v]split=2[bg][fg];"
-            "[bg]scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,boxblur=25:5[blurred_bg];"
+            "[bg]scale=120:213,boxblur=5:1,scale=1080:1920:flags=bilinear[blurred_bg];"
             "[fg]scale=1080:-1:flags=lanczos[scaled_fg];"
             "[blurred_bg][scaled_fg]overlay=(W-w)/2:(H-h)/2[base_canvas];"
             f"[base_canvas]drawtext=text='{clean_hook}':x=(w-text_w)/2:y=230:fontsize=46:fontcolor=white:borderw=4:bordercolor=black:shadowcolor=black@0.8:shadowx=3:shadowy=3[canvas_with_hook];"
@@ -333,7 +336,7 @@ def main():
     else:
         filter_complex = (
             "[0:v]split=2[bg][fg];"
-            "[bg]scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,boxblur=25:5[blurred_bg];"
+            "[bg]scale=120:213,boxblur=5:1,scale=1080:1920:flags=bilinear[blurred_bg];"
             "[fg]scale=1080:-1:flags=lanczos[scaled_fg];"
             "[blurred_bg][scaled_fg]overlay=(W-w)/2:(H-h)/2[base_canvas];"
             f"[base_canvas]drawtext=text='{clean_hook}':x=(w-text_w)/2:y=230:fontsize=46:fontcolor=white:borderw=4:bordercolor=black:shadowcolor=black@0.8:shadowx=3:shadowy=3[final_v]"
@@ -345,10 +348,10 @@ def main():
         "-filter_complex", filter_complex,
         "-map", "[final_v]",
         "-map", "0:a?",
-        "-c:v", "libx264", "-preset", "fast", "-crf", "18",
-        "-b:v", "8M", "-maxrate", "12M", "-bufsize", "16M",
+        "-c:v", "libx264", "-preset", "veryfast", "-crf", "20",
+        "-b:v", "6M", "-maxrate", "10M", "-bufsize", "12M",
         "-c:a", "aac", "-b:a", "192k",
-        "-t", "38",
+        "-t", "35",
         rendered_video
     ]
     subprocess.run(render_cmd, check=True)

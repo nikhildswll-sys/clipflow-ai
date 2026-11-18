@@ -35,6 +35,14 @@ jobs:
         run: |
           pip install --no-cache-dir yt-dlp google-api-python-client google-auth-oauthlib google-auth faster-whisper
 
+      - name: Setup Cloudflare WARP (Bypass Cloud Datacenter Bot Checks)
+        continue-on-error: true
+        timeout-minutes: 1
+        uses: fscarmen/warp-on-actions@v1.4
+        with:
+          stack: ipv4
+          mode: wireguard
+
       - name: Run Cloud AutoPilot Clipper & Uploader
         env:
           CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
