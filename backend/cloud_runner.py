@@ -77,20 +77,51 @@ def main():
     os.makedirs(os.path.join(base_dir, "storage", "exports"), exist_ok=True)
     raw_video = os.path.join(base_dir, "storage", "uploads", f"cloud_{int(time.time())}.mp4")
 
-    dl_cmd = [
-        "yt-dlp",
-        "--extractor-args", "youtube:player_client=ios,android",
-        "-f", "b/bv*+ba/best",
-        "--download-sections", "*00:00:15-00:01:00",
-        "--merge-output-format", "mp4",
-        "-o", raw_video,
-        yt_url
+    dl_strategies = [
+        [
+            "yt-dlp",
+            "--remote-components", "ejs:github",
+            "--extractor-args", "youtubepot-bgutilhttp:base_url=http://127.0.0.1:4416",
+            "--extractor-args", "youtube:player_client=android;player_skip=webpage,configs,initial_data",
+            "-f", "b/bv*+ba/best",
+            "--download-sections", "*00:00:15-00:01:00",
+            "--merge-output-format", "mp4",
+            "-o", raw_video,
+            yt_url
+        ],
+        [
+            "yt-dlp",
+            "--extractor-args", "youtube:player_client=tv_embedded,web_embedded",
+            "-f", "b/bv*+ba/best",
+            "--download-sections", "*00:00:15-00:01:00",
+            "--merge-output-format", "mp4",
+            "-o", raw_video,
+            yt_url
+        ],
+        [
+            "yt-dlp",
+            "--extractor-args", "youtube:player_client=ios,tv",
+            "-f", "b/bv*+ba/best",
+            "--download-sections", "*00:00:15-00:01:00",
+            "--merge-output-format", "mp4",
+            "-o", raw_video,
+            yt_url
+        ]
     ]
-    try:
-        subprocess.run(dl_cmd, check=True, timeout=60)
-        logger.info(f"Downloaded video segment: {raw_video}")
-    except Exception as e:
-        logger.warning(f"yt-dlp download challenge on Azure IP: {e}. Using high-quality video fallback...")
+
+    downloaded = False
+    for strat in dl_strategies:
+        try:
+            subprocess.run(strat, check=True, timeout=90)
+            if os.path.exists(raw_video) and os.path.getsize(raw_video) > 50000:
+                logger.info(f"Downloaded video segment successfully: {raw_video}")
+                downloaded = True
+                break
+        except Exception as e:
+            logger.warning(f"Download strategy failed: {e}. Trying next...")
+
+    if not downloaded:
+        logger.warning("All download strategies failed. Using high-quality video fallback...")
         from sample_data import generate_sample_mp4
         generate_sample_mp4(raw_video, duration=35)
 

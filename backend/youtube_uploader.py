@@ -30,19 +30,15 @@ class YouTubeUploader:
         creds = None
         if os.path.exists(token_file):
             try:
-                creds = Credentials.from_authorized_user_file(token_file, SCOPES)
+                creds = Credentials.from_authorized_user_file(token_file)
             except Exception as e:
                 logger.warning(f"Error loading cached credentials: {e}")
 
-        if not creds or not creds.valid:
-            if creds and creds.expired and creds.refresh_token:
-                creds.refresh(Request())
-            else:
-                flow = InstalledAppFlow.from_client_secrets_file(client_secrets_file, SCOPES)
-                creds = flow.run_local_server(port=0)
-            
-            with open(token_file, "w", encoding="utf-8") as token:
-                token.write(creds.to_json())
+        if not creds:
+            raise RuntimeError(f"No valid credentials found at {token_file}! Please check your secrets.")
+
+        if creds.expired and creds.refresh_token:
+            creds.refresh(Request())
 
         return build("youtube", "v3", credentials=creds)
 
