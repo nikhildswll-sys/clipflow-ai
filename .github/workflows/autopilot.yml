@@ -15,7 +15,7 @@ on:
 jobs:
   clip_and_upload:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
 
     steps:
       - name: Checkout Repository
@@ -32,7 +32,7 @@ jobs:
           deno-version: v2.x
 
       - name: Install FFmpeg & System Dependencies
-        timeout-minutes: 4
+        timeout-minutes: 10
         run: |
           if ! command -v ffmpeg &> /dev/null; then
             echo "Installing FFmpeg..."
@@ -40,8 +40,8 @@ jobs:
             sudo killall -9 apt apt-get unattended-upgrade 2>/dev/null || true
             sudo rm -f /var/lib/apt/lists/lock /var/cache/apt/archives/lock /var/lib/dpkg/lock* 2>/dev/null || true
             sudo dpkg --configure -a 2>/dev/null || true
-            sudo apt-get update -qq -o Acquire::http::Timeout=10
-            sudo apt-get install -y --no-install-recommends -o Acquire::http::Timeout=15 -o Acquire::Retries=1 ffmpeg fonts-dejavu-core
+            sudo apt-get update -qq -o Acquire::http::Timeout=20
+            sudo apt-get install -y --no-install-recommends -o Acquire::http::Timeout=30 -o Acquire::Retries=3 ffmpeg fonts-dejavu-core
           else
             echo "FFmpeg already installed: $(ffmpeg -version | head -n 1)"
           fi
@@ -54,12 +54,12 @@ jobs:
           mode: client
 
       - name: Install Python Packages
-        timeout-minutes: 3
+        timeout-minutes: 6
         run: |
           pip install --no-cache-dir yt-dlp google-api-python-client google-auth-oauthlib google-auth faster-whisper
 
       - name: Run Cloud AutoPilot Clipper & Uploader
-        timeout-minutes: 6
+        timeout-minutes: 10
         env:
           CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
           YOUTUBE_TOKEN: ${{ secrets.YOUTUBE_TOKEN }}
