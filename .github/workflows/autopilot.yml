@@ -25,15 +25,10 @@ jobs:
         with:
           deno-version: v2.x
 
-      - name: Setup FFmpeg
-        uses: FedericoCarboni/setup-ffmpeg@v3
-        with:
-          ffmpeg-version: release
-
-      - name: Setup Fonts
+      - name: Install Native FFmpeg & Fonts
         run: |
-          mkdir -p backend/fonts
-          wget -q https://raw.githubusercontent.com/google/fonts/main/ofl/montserrat/Montserrat-Black.ttf -O backend/fonts/Montserrat-Black.ttf || true
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends ffmpeg fonts-dejavu-core
 
       - name: Setup Cloudflare WARP SOCKS5 Proxy (Datacenter Anti-Bot Bypass)
         continue-on-error: true
