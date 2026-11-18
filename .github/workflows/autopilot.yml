@@ -25,25 +25,25 @@ jobs:
         with:
           deno-version: v2.x
 
-      - name: Fast System & Fonts Setup
-        run: |
-          sudo systemctl stop unattended-upgrades 2>/dev/null || true
-          sudo DEBIAN_FRONTEND=noninteractive apt-get update -qq
-          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends ffmpeg fonts-dejavu-core
+      - name: Verify FFmpeg
+        run: ffmpeg -version
 
       - name: Install Python Packages
+        timeout-minutes: 3
         run: |
           pip install --no-cache-dir yt-dlp "bgutil-ytdlp-pot-provider==0.8.1" google-api-python-client google-auth-oauthlib google-auth faster-whisper
 
       - name: Start YouTube BotGuard PO-Token Provider (Cloud Anti-Bot Bypass)
+        timeout-minutes: 2
         continue-on-error: true
         run: |
-          wget -q https://github.com/jim60105/bgutil-ytdlp-pot-provider-rs/releases/latest/download/bgutil-pot-linux-x86_64 -O bgutil-pot
+          wget -q --timeout=15 https://github.com/jim60105/bgutil-ytdlp-pot-provider-rs/releases/latest/download/bgutil-pot-linux-x86_64 -O bgutil-pot
           chmod +x bgutil-pot
           ./bgutil-pot server --host 127.0.0.1 --port 4416 &
-          sleep 3
+          sleep 2
 
       - name: Run Cloud AutoPilot Clipper & Uploader
+        timeout-minutes: 6
         env:
           CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
           YOUTUBE_TOKEN: ${{ secrets.YOUTUBE_TOKEN }}
