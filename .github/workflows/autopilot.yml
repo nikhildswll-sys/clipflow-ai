@@ -35,6 +35,13 @@ jobs:
           mkdir -p backend/fonts
           wget -q https://raw.githubusercontent.com/google/fonts/main/ofl/montserrat/Montserrat-Black.ttf -O backend/fonts/Montserrat-Black.ttf || true
 
+      - name: Setup Cloudflare WARP SOCKS5 Proxy (Datacenter Anti-Bot Bypass)
+        continue-on-error: true
+        uses: fscarmen/warp-on-actions@v1.4
+        with:
+          stack: ipv4
+          mode: proxy
+
       - name: Install Python Packages
         timeout-minutes: 3
         run: |

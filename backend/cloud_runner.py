@@ -213,6 +213,16 @@ def main():
     downloaded = False
     chosen_item = None
 
+    proxy_cmd = []
+    try:
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            s.settimeout(1)
+            if s.connect_ex(("127.0.0.1", 40000)) == 0:
+                proxy_cmd = ["--proxy", "socks5://127.0.0.1:40000"]
+                logger.info("WARP SOCKS5 anti-bot proxy detected on 127.0.0.1:40000!")
+    except Exception:
+        pass
+
     for candidate in candidate_items[:5]:
         vid = candidate["id"]["videoId"]
         yt_url = f"https://www.youtube.com/watch?v={vid}"
@@ -221,9 +231,10 @@ def main():
         logger.info(f"Attempting download for candidate: '{raw_video_title}' by '{actual_channel}' ({yt_url})...")
 
         dl_strategies = [
-            # Strategy 1: Apple VisionOS client (Unrestricted 1080p60 Full HD DASH streams, zero bot checks!)
+            # Strategy 1: Apple VisionOS client (Unrestricted 1080p60 Full HD DASH streams)
             [
                 "yt-dlp",
+                *proxy_cmd,
                 "--extractor-args", "youtube:player_client=visionos",
                 "-f", "bv*[height<=1080]+ba/b[height<=1080]/bestvideo+bestaudio/best",
                 "--download-sections", clip_section,
@@ -231,9 +242,10 @@ def main():
                 "-o", raw_video,
                 yt_url
             ],
-            # Strategy 2: Android client with direct API access (Never gets bot checks)
+            # Strategy 2: Android client with direct API access
             [
                 "yt-dlp",
+                *proxy_cmd,
                 "--extractor-args", "youtube:player_client=android;player_skip=webpage,configs,initial_data",
                 "-f", "b/bv+ba/best",
                 "--download-sections", clip_section,
@@ -244,6 +256,7 @@ def main():
             # Strategy 3: Mobile web fallback
             [
                 "yt-dlp",
+                *proxy_cmd,
                 "--extractor-args", "youtube:player_client=mweb",
                 "-f", "bv*[height<=1080]+ba/b/best",
                 "--download-sections", clip_section,
