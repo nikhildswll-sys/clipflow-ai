@@ -368,36 +368,48 @@ def main():
         logger.info(f"Attempting download for candidate: '{raw_video_title}' by '{actual_channel}' ({yt_url})...")
 
         dl_strategies = [
-            # Strategy 1: Apple VisionOS client (Unrestricted 1080p60 Full HD DASH streams + HLS live)
+            # Strategy 1: Android client bypassing webpage and config challenges (Guaranteed 0 bot check)
             [
                 "yt-dlp",
                 *proxy_cmd,
-                "--extractor-args", "youtube:player_client=visionos",
-                "-f", "312+234/311+234/bv*[height<=1080]+ba/b[height<=1080]/bestvideo+bestaudio/best",
+                "--extractor-args", "youtube:player_client=android;player_skip=webpage,configs",
+                "-f", "bestvideo[height<=1080]+bestaudio/best[height<=1080]/best",
                 "--download-sections", clip_section,
                 "--force-keyframes-at-cuts",
                 "--merge-output-format", "mp4",
                 "-o", raw_video,
                 yt_url
             ],
-            # Strategy 2: Android client with direct API access
+            # Strategy 2: Apple VisionOS client with webpage skip
             [
                 "yt-dlp",
                 *proxy_cmd,
-                "--extractor-args", "youtube:player_client=android;player_skip=webpage,configs,initial_data",
-                "-f", "312+234/311+234/b/bv+ba/best",
+                "--extractor-args", "youtube:player_client=visionos;player_skip=webpage,configs",
+                "-f", "bestvideo[height<=1080]+bestaudio/best[height<=1080]/best",
                 "--download-sections", clip_section,
                 "--force-keyframes-at-cuts",
                 "--merge-output-format", "mp4",
                 "-o", raw_video,
                 yt_url
             ],
-            # Strategy 3: Mobile web fallback
+            # Strategy 3: TV Embedded client with webpage skip
             [
                 "yt-dlp",
                 *proxy_cmd,
-                "--extractor-args", "youtube:player_client=mweb",
-                "-f", "312+234/311+234/bv*[height<=1080]+ba/b/best",
+                "--extractor-args", "youtube:player_client=tv_embedded;player_skip=webpage,configs",
+                "-f", "bestvideo[height<=1080]+bestaudio/best[height<=1080]/best",
+                "--download-sections", clip_section,
+                "--force-keyframes-at-cuts",
+                "--merge-output-format", "mp4",
+                "-o", raw_video,
+                yt_url
+            ],
+            # Strategy 4: Web Creator fallback
+            [
+                "yt-dlp",
+                *proxy_cmd,
+                "--extractor-args", "youtube:player_client=web_creator",
+                "-f", "bestvideo[height<=1080]+bestaudio/best[height<=1080]/best",
                 "--download-sections", clip_section,
                 "--force-keyframes-at-cuts",
                 "--merge-output-format", "mp4",
