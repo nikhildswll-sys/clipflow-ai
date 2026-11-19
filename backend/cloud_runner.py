@@ -507,13 +507,14 @@ def main():
     clean_hook = "".join(c for c in hook if ord(c) < 128 and c not in ["'", ":", '"']).strip()
 
     if has_subtitles:
-        rel_ass = ass_rel_path.replace("\\", "/")
+        # Properly escape path for FFmpeg filter on both Windows and Linux
+        escaped_ass = ass_full_path.replace("\\", "/").replace(":", "\\:")
         filter_complex = (
             "[0:v]setpts=PTS-STARTPTS,split=2[bg][fg];"
             "[bg]scale=120:213,boxblur=5:1,scale=1080:1920:flags=bilinear,setsar=1[blurred_bg];"
             "[fg]scale=1080:-1:flags=lanczos,setsar=1[scaled_fg];"
             "[blurred_bg][scaled_fg]overlay=(W-w)/2:(H-h)/2,setsar=1[base_canvas];"
-            f"[base_canvas]ass={rel_ass}:fontsdir=fonts,setsar=1,format=yuv420p[final_v]"
+            f"[base_canvas]ass='{escaped_ass}':fontsdir=fonts,setsar=1,format=yuv420p[final_v]"
         )
     else:
         filter_complex = (
@@ -539,7 +540,7 @@ def main():
         "-t", "35",
         rendered_video
     ]
-    subprocess.run(render_cmd, check=True, timeout=120)
+    subprocess.run(render_cmd, cwd=base_dir, check=True, timeout=120)
     logger.info(f"Rendered 9:16 Full HD Short: {rendered_video}")
 
     # 6. Upload to YouTube Shorts
