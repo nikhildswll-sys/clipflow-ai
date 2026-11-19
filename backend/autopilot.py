@@ -19,71 +19,58 @@ class AutoPilotService:
     - Automatically uploads to YouTube Shorts every 30 minutes!
     """
 
-    # --- GTA 6 LIVE STREAM SNIPER POOL (Indian & USA/Global High-Watching Streamers) ---
-    GTA6_STREAM_TOPICS = [
-        # USA & Global Streamer Titans
-        {"category": "GTA 6 Stream", "streamer": "IShowSpeed", "topic": "IShowSpeed GTA 6 trailer reaction", "hook": "SPEED WENT CRAZY ON GTA 6 🤯", "slice": "*00:01:45-00:02:20"},
-        {"category": "GTA 6 Stream", "streamer": "Kai Cenat", "topic": "Kai Cenat GTA 6 reaction", "hook": "KAI CENAT CANNOT BELIEVE THIS... 😱", "slice": "*00:02:00-00:02:35"},
-        {"category": "GTA 6 Stream", "streamer": "xQc", "topic": "xQc GTA 6 trailer reaction", "hook": "xQc SPOTS INSANE GTA 6 DETAIL 🔍", "slice": "*00:01:30-00:02:05"},
-        {"category": "GTA 6 Stream", "streamer": "Adin Ross", "topic": "Adin Ross GTA 6 trailer reaction", "hook": "ADIN ROSS GTA 6 STREAM MOMENT 💀", "slice": "*00:01:40-00:02:15"},
-        {"category": "GTA 6 Stream", "streamer": "Jynxzi", "topic": "Jynxzi GTA 6 trailer reaction", "hook": "JYNXZI SCREAMS AT GTA 6 🚨", "slice": "*00:01:25-00:02:00"},
-        {"category": "GTA 6 Stream", "streamer": "Asmongold", "topic": "Asmongold GTA 6 graphics breakdown", "hook": "THE TRUTH ABOUT GTA 6 GRAPHICS 👁️", "slice": "*00:02:15-00:02:50"},
-        {"category": "GTA 6 Stream", "streamer": "FlightReacts", "topic": "FlightReacts GTA 6 trailer reaction", "hook": "FLIGHTREACTS SEES GTA 6 😂", "slice": "*00:01:35-00:02:10"},
-
-        # Indian Gaming Royalty (Highest Watching Live)
-        {"category": "GTA 6 Stream", "streamer": "Techno Gamerz", "topic": "Techno Gamerz GTA 6 trailer reaction", "hook": "TECHNO GAMERZ SEES GTA 6 🌴", "slice": "*00:01:50-00:02:25"},
-        {"category": "GTA 6 Stream", "streamer": "CarryisLive", "topic": "CarryisLive WE ARE NOT READY FOR GTA VI", "hook": "CARRYMINATI GTA 6 REACTION 🔥", "slice": "*00:02:00-00:02:35"},
-        {"category": "GTA 6 Stream", "streamer": "Total Gaming", "topic": "Total Gaming Ajju007 GTA 6 reaction", "hook": "TOTAL GAMING GTA 6 REACTION 💥", "slice": "*00:01:40-00:02:15"},
-        {"category": "GTA 6 Stream", "streamer": "Mythpat", "topic": "Mythpat GTA 6 trailer reaction", "hook": "MYTHPAT GTA 6 FUNNIEST MOMENT 😂", "slice": "*00:01:30-00:02:05"},
-        {"category": "GTA 6 Stream", "streamer": "Mortal", "topic": "Mortal Scout GTA 6 trailer reaction", "hook": "MORTAL GTA 6 REACTION 🚨", "slice": "*00:01:45-00:02:20"},
-        {"category": "GTA 6 Stream", "streamer": "Triggered Insaan", "topic": "Live Insaan GTA 6 reaction", "hook": "LIVE INSAAN GTA 6 REACTION 🤯", "slice": "*00:01:35-00:02:10"},
-        {"category": "GTA 6 Stream", "streamer": "Ducky Bhai", "topic": "Ducky Bhai GTA 6 trailer reaction", "hook": "DUCKY BHAI GTA 6 REACTION 😱", "slice": "*00:01:30-00:02:05"},
-
-        # Viral Live Stream Events & Highest Watching Clips
-        {"category": "GTA 6 Stream", "topic": "GTA 6 realistic police AI behavior and car crash deformation physics 4K", "hook": "THIS POLICE AI IS TERRIFYING... 🚨", "slice": "*00:01:15-00:01:50"},
-        {"category": "GTA 6 Stream", "topic": "GTA 6 Vice City graphics comparison vs real life Miami 4K gameplay", "hook": "VICE CITY VS REAL LIFE 🌴", "slice": "*00:01:30-00:02:05"},
-        {"category": "GTA 6 Stream", "topic": "GTA 6 map size comparison vs GTA 5 secret locations breakdown", "hook": "THE MAP IS 3X BIGGER THAN GTA 5 🗺️", "slice": "*00:01:20-00:01:55"},
-        {"category": "GTA 6 Stream", "topic": "GTA 6 water physics beach wave simulation and NPC reactions 4k", "hook": "THIS WATER PHYSICS IS UNREAL 🌊", "slice": "*00:01:25-00:02:00"},
-        {"category": "GTA 6 Stream", "topic": "GTA 6 2 billion dollar budget why Rockstar took 12 years documentary", "hook": "THE $2,000,000,000 VIDEO GAME 💰", "slice": "*00:01:30-00:02:05"}
-    ]
-
     DEFAULT_TOPICS = [
-        # --- 1. GTA 6 Viral Wave (Indian Gamers & Global Leaks / Graphics / Physics) ---
-        {"category": "GTA 6", "topic": "GTA 6 realistic police AI behavior and car crash deformation physics 4K", "hook": "THIS POLICE AI IS TERRIFYING... 🚨", "slice": "*00:01:15-00:01:50"},
-        {"category": "GTA 6", "topic": "GTA 6 Vice City graphics comparison vs real life Miami 4K gameplay", "hook": "VICE CITY VS REAL LIFE 🌴", "slice": "*00:01:30-00:02:05"},
-        {"category": "GTA 6", "topic": "GTA 6 map size comparison vs GTA 5 secret locations breakdown", "hook": "THE MAP IS 3X BIGGER THAN GTA 5 🗺️", "slice": "*00:01:20-00:01:55"},
-        {"category": "GTA 6", "topic": "GTA 6 Lucia and Jason story mystery dark secrets gameplay breakdown", "hook": "THE DARK TRUTH OF JASON & LUCIA 💀", "slice": "*00:01:40-00:02:15"},
-        {"category": "GTA 6", "topic": "GTA 6 2 billion dollar budget why Rockstar took 12 years documentary", "hook": "THE $2,000,000,000 VIDEO GAME 💰", "slice": "*00:01:30-00:02:05"},
-        {"category": "GTA 6", "topic": "GTA 6 water physics beach wave simulation and NPC reactions 4k", "hook": "THIS WATER PHYSICS IS UNREAL 🌊", "slice": "*00:01:25-00:02:00"},
-        {"category": "GTA 6", "topic": "GTA 6 weapon mechanics gore and shooting physics leaked gameplay breakdown", "hook": "GTA 6 GUNPLAY DETAILS LEAKED 💥", "slice": "*00:01:10-00:01:45"},
+        # --- 1. Indian High-Retention Podcasts (Deep Talks, Hacking, Secrets) ---
+        {"category": "Indian Podcast", "topic": "BeerBiceps Ranveer Allahbadia Aghori sadhu dark secrets podcast", "hook": "THE SECRET OF AGHORI SADHUS 🕉️", "slice": "*00:02:10-00:02:45"},
+        {"category": "Indian Podcast", "topic": "Raj Shamani podcast cyber security expert how hackers tap your phone", "hook": "HOW HACKERS SPY ON YOUR PHONE 📱", "slice": "*00:01:45-00:02:20"},
+        {"category": "Indian Podcast", "topic": "BeerBiceps Ranveer Allahbadia ancient temple science mystery", "hook": "ANCIENT TEMPLES SCIENTIFIC SECRET 🏛️", "slice": "*00:02:00-00:02:35"},
+        {"category": "Indian Podcast", "topic": "Dostcast Vinamre Kasana dark psychology human behavior manipulation", "hook": "DARK PSYCHOLOGY SECRETS 👁️", "slice": "*00:01:30-00:02:05"},
+        {"category": "Indian Podcast", "topic": "RealHit podcast Delhi crime investigation undercover officer story", "hook": "UNDERCOVER COP REVEALS TRUTH 🚨", "slice": "*00:02:15-00:02:50"},
+        {"category": "Indian Podcast", "topic": "Prakhar ke Pravachan manipulation techniques how people control you", "hook": "HOW PEOPLE MANIPULATE YOU 🧠", "slice": "*00:01:40-00:02:15"},
+        {"category": "Indian Podcast", "topic": "Raj Shamani podcast billionaire business dark secrets exposed", "hook": "DARK SECRETS OF BILLIONAIRES 💰", "slice": "*00:01:50-00:02:25"},
+        {"category": "Indian Podcast", "topic": "ANI podcast Smita Prakash RAW secret agent operation details", "hook": "SECRET R&AW OPERATIONS REVEALED 🇮🇳", "slice": "*00:02:05-00:02:40"},
 
-        # --- 2. High-Retention Podcasts (Indian & Global Speech / Animated Captions) ---
-        {"category": "Podcast", "topic": "Ranveer Allahbadia BeerBiceps secret ancient temple mystery breakdown", "hook": "THE SECRET OF ANCIENT TEMPLES 🕉️", "slice": "*00:02:00-00:02:35"},
-        {"category": "Podcast", "topic": "Raj Shamani podcast cyber security expert how hackers tap your phone", "hook": "HOW THEY ARE SPYING ON YOUR PHONE 📱", "slice": "*00:01:45-00:02:20"},
-        {"category": "Podcast", "topic": "Joe Rogan Neil deGrasse Tyson what happens inside black hole time dilation", "hook": "TIME STOPS INSIDE A BLACK HOLE ⏳", "slice": "*00:01:30-00:02:05"},
-        {"category": "Podcast", "topic": "Joe Rogan Lex Fridman artificial intelligence superintelligence singularity warning", "hook": "AI WILL SURPASS HUMAN INTELLIGENCE 🤖", "slice": "*00:01:50-00:02:25"},
-        {"category": "Podcast", "topic": "Andrew Huberman dopamine reset rewire brain science protocol", "hook": "HOW TO REWIRE YOUR BRAIN IN 48 HOURS ⚡", "slice": "*00:02:10-00:02:45"},
-        {"category": "Podcast", "topic": "Neil deGrasse Tyson explains simulation theory mind blowing interview", "hook": "ARE WE LIVING IN A SIMULATION? 👁️", "slice": "*00:01:35-00:02:10"},
+        # --- 2. Indian YouTubers Comedy & Standup (Hilarious Moments & Roasts) ---
+        {"category": "Indian Comedy", "topic": "Samay Raina Indias Got Latent funniest unhinged roast moments", "hook": "SAMAY RAINA UNHINGED MOMENT 😂", "slice": "*00:01:20-00:01:55"},
+        {"category": "Indian Comedy", "topic": "Tanmay Bhat funniest meme reaction review hilarious laugh", "hook": "TANMAY BHAT CANNOT STOP LAUGHING 🤣", "slice": "*00:01:30-00:02:05"},
+        {"category": "Indian Comedy", "topic": "Zakir Khan stand up comedy Sakht Launda funniest punchlines", "hook": "ZAKIR KHAN SAKHT LAUNDA MOMENT 🔥", "slice": "*00:01:45-00:02:20"},
+        {"category": "Indian Comedy", "topic": "Anubhav Singh Bassi stand up comedy hostel cheating hilarious story", "hook": "BASSI HOSTEL STORIES ARE WILD 💀", "slice": "*00:02:00-00:02:35"},
+        {"category": "Indian Comedy", "topic": "Abhishek Upmanyu stand up comedy friends and Delhi life jokes", "hook": "ABHISHEK UPMANYU BEST PUNCHLINE 😂", "slice": "*00:01:25-00:02:00"},
+        {"category": "Indian Comedy", "topic": "Samay Raina chess stream funniest joke with comedians", "hook": "SAMAY RAINA DESTROYED HIM 😭", "slice": "*00:01:35-00:02:10"},
+        {"category": "Indian Comedy", "topic": "Munawar Faruqui standup comedy funniest crowd interaction roast", "hook": "MUNAWAR ROASTS THE AUDIENCE 🎤", "slice": "*00:01:40-00:02:15"},
 
-        # --- 3. Sci-Fi & Cosmic Mysteries (Insane Visuals & Mind Expansion) ---
+        # --- 3. English Most-Viewed Podcasts & Comedy (Viral Global Clips) ---
+        {"category": "English Podcast", "topic": "Joe Rogan Elon Musk what happens when AI takes over future", "hook": "ELON MUSK AI PREDICTION 🤖", "slice": "*00:01:30-00:02:05"},
+        {"category": "English Podcast", "topic": "Theo Von funniest childhood story crazy southern memories interview", "hook": "THEO VON CRAZIEST STORY 😂", "slice": "*00:01:15-00:01:50"},
+        {"category": "English Podcast", "topic": "Joe Rogan David Goggins how to build unbreakable mind discipline", "hook": "DAVID GOGGINS RAW MOTIVATION 💥", "slice": "*00:01:40-00:02:15"},
+        {"category": "English Podcast", "topic": "Andrew Schulz Flagrant wildly funny crowd work roast clip", "hook": "ANDREW SCHULZ SAVAGE ROAST 💀", "slice": "*00:01:20-00:01:55"},
+        {"category": "English Podcast", "topic": "Joe Rogan Neil deGrasse Tyson mind blowing simulation theory interview", "hook": "ARE WE LIVING IN A SIMULATION? 👁️", "slice": "*00:01:35-00:02:10"},
+        {"category": "English Podcast", "topic": "Conan OBrien funniest interview laugh with celebrities best moments", "hook": "CONAN FUNNIEST CELEB MOMENT 🤣", "slice": "*00:01:25-00:02:00"},
+        {"category": "English Podcast", "topic": "Andrew Huberman protocol how to rewire brain dopamine focus fast", "hook": "REWIRE YOUR BRAIN IN 48 HOURS ⚡", "slice": "*00:02:00-00:02:35"},
+
+        # --- 4. Indian Ancient Mysteries & History (Curiosity & Shock Factor) ---
+        {"category": "Indian Mystery", "topic": "Kailash Temple Ellora carved top to bottom impossible engineering mystery", "hook": "IMPOSSIBLE ANCIENT ENGINEERING 🏛️", "slice": "*00:01:50-00:02:25"},
+        {"category": "Indian Mystery", "topic": "Padmanabhaswamy Temple Vault B unopened door snake curse mystery", "hook": "THE CURSE OF VAULT B 🐍", "slice": "*00:01:40-00:02:15"},
+        {"category": "Indian Mystery", "topic": "Ram Setu underwater bridge floating stones NASA satellite scan", "hook": "THE SECRET BEHIND RAM SETU 🌊", "slice": "*00:01:30-00:02:05"},
+        {"category": "Indian Mystery", "topic": "Vrindavan Nidhivan mystery what happens at night trees dancing Gopis", "hook": "NIDHIVAN NIGHT MYSTERY 🌙", "slice": "*00:01:45-00:02:20"},
+        {"category": "Indian Mystery", "topic": "deadly curse of the Kohinoor Diamond every ruler who possessed it", "hook": "THE DEADLY CURSE OF KOHINOOR 💎", "slice": "*00:02:00-00:02:35"},
+        {"category": "Indian Mystery", "topic": "Bhangarh Fort Rajasthan Asia most haunted location true history", "hook": "WHAT HAPPENS INSIDE BHANGARH? 💀", "slice": "*00:01:35-00:02:10"},
+        {"category": "Indian Mystery", "topic": "Indus Valley Civilization script why nobody can decode ancient language", "hook": "THE UNDECODED ANCIENT SCRIPT 📜", "slice": "*00:01:30-00:02:05"},
+
+        # --- 5. Sci-Fi & Cosmic Mysteries (Space, Black Holes, Physics) ---
         {"category": "Sci-Fi", "topic": "James Webb telescope discovered impossible massive structure in deep space visualization", "hook": "NASA DIDNT EXPECT TO FIND THIS 🔭", "slice": "*00:01:40-00:02:15"},
         {"category": "Sci-Fi", "topic": "black hole accretion disk 4K simulation interstellar crossing event horizon", "hook": "WHAT HAPPENS INSIDE A BLACK HOLE? 🕳️", "slice": "*00:01:20-00:01:55"},
         {"category": "Sci-Fi", "topic": "scale of the universe 3D 4k mind blowing cosmic comparison", "hook": "HOW TINY ARE WE REALLY? 🌌", "slice": "*00:01:15-00:01:50"},
         {"category": "Sci-Fi", "topic": "solar superstorm Carrington event hitting modern earth simulation NASA", "hook": "WHAT A SOLAR STORM DOES TO EARTH ⚡", "slice": "*00:01:30-00:02:05"},
-        {"category": "Sci-Fi", "topic": "future mars colony 2050 4K realistic simulation life in space", "hook": "LIFE ON MARS IN 2050 🚀", "slice": "*00:01:25-00:02:00"},
+        {"category": "Sci-Fi", "topic": "ocean moon Europa aliens subsurface ocean discovery NASA simulation", "hook": "LIFE UNDER ICE ON EUROPA? 🪐", "slice": "*00:01:25-00:02:00"},
 
-        # --- 4. History & Ancient Mysteries (Indian & World) ---
-        {"category": "History", "topic": "Kailash Temple rock-cut architecture mystery carved top to bottom impossible engineering", "hook": "IMPOSSIBLE ANCIENT ENGINEERING 🏛️", "slice": "*00:01:50-00:02:25"},
-        {"category": "History", "topic": "deadly curse of the Kohinoor Diamond every king who possessed it documentary", "hook": "THE DEADLY CURSE OF KOHINOOR 💎", "slice": "*00:02:00-00:02:35"},
-        {"category": "History", "topic": "Indus Valley Civilization script mystery why nobody can decode it", "hook": "THE UNDECODED ANCIENT SCRIPT 📜", "slice": "*00:01:35-00:02:10"},
-        {"category": "History", "topic": "Great Pyramid of Giza secret chambers and Orion constellation alignment documentary", "hook": "WHAT LIES INSIDE THE PYRAMIDS? 🔍", "slice": "*00:01:45-00:02:20"},
-        {"category": "History", "topic": "lost city of Atlantis underwater satellite scan discovery mystery", "hook": "SECRET BEHIND ATLANTIS DISCOVERY ⚓", "slice": "*00:01:30-00:02:05"},
-
-        # --- 5. Kids & Curiosity Wonders (Prehistoric, Animals & Deep Earth) ---
+        # --- 6. Kids & Curiosity Wonders (Prehistoric, Animals & Deep Sea) ---
         {"category": "Wonders", "topic": "asteroid impact simulation that wiped out dinosaurs 66 million years ago 4K", "hook": "THE DAY THE ASTEROID HIT EARTH ☄️", "slice": "*00:01:20-00:01:55"},
         {"category": "Wonders", "topic": "Megalodon vs Blue Whale scale comparison terror of prehistoric oceans 3D", "hook": "THE BIGGEST PREDATOR IN HISTORY 🦈", "slice": "*00:01:15-00:01:50"},
         {"category": "Wonders", "topic": "deep sea Mariana Trench terrifying creatures surviving extreme pressure NOAA", "hook": "ALIEN CREATURES IN THE DEEP SEA 🌊", "slice": "*00:01:30-00:02:05"},
-        {"category": "Wonders", "topic": "immortal jellyfish Turritopsis dohrnii reverses its age forever science", "hook": "THE ANIMAL THAT NEVER DIES 🪼", "slice": "*00:01:25-00:02:00"}
+        {"category": "Wonders", "topic": "immortal jellyfish Turritopsis dohrnii reverses its age forever science", "hook": "THE ANIMAL THAT NEVER DIES 🪼", "slice": "*00:01:25-00:02:00"},
+        {"category": "Wonders", "topic": "honey badger fights lions and survives king cobra venom insane animal", "hook": "THE MOST FEARLESS ANIMAL ON EARTH 🦡", "slice": "*00:01:15-00:01:50"},
+        {"category": "Wonders", "topic": "peregrine falcon 390 km h fastest animal dive speed simulation", "hook": "FASTEST CREATURE IN THE UNIVERSE 🦅", "slice": "*00:01:20-00:01:55"}
     ]
 
     def __init__(self, interval_seconds: int = 1800, privacy_status: str = "public"):

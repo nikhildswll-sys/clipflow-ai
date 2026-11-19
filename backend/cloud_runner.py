@@ -76,11 +76,6 @@ def main():
                 return True
         return False
 
-    from datetime import datetime, timezone, timedelta
-    ist_now = datetime.now(timezone.utc) + timedelta(hours=5, minutes=30)
-    # TGG exclusive lock until 12:00 Midnight IST tonight (Nov 18, 2026)
-    tgg_lock = (ist_now.date() == datetime(2026, 11, 18).date()) or mode in ["tgg_only", "tgg"]
-
     target_vid_override = os.environ.get("TARGET_VIDEO_ID", "").strip()
     candidate_items = []
 
@@ -89,13 +84,12 @@ def main():
         v_res = youtube.videos().list(id=target_vid_override, part="snippet").execute()
         if v_res.get("items"):
             item_raw = v_res["items"][0]
-            actual_ch = item_raw["snippet"].get("channelTitle", "TGG").strip()
+            actual_ch = item_raw["snippet"].get("channelTitle", "Creator").strip()
             topic_item = {
-                "topic": item_raw["snippet"].get("title", f"{actual_ch} Plays GTA 6"),
-                "category": "GTA 6 Stream",
-                "streamer": actual_ch,
-                "slice": "*00:03:00-00:03:35",
-                "hook": f"{actual_ch.upper()} PLAYS GTA 6 🔥"
+                "topic": item_raw["snippet"].get("title", f"{actual_ch} Video"),
+                "category": "Curated",
+                "slice": "*00:01:30-00:02:05",
+                "hook": f"{actual_ch.upper()} BEST MOMENT 🔥"
             }
             chosen_item = {
                 "id": {"videoId": target_vid_override},
@@ -105,175 +99,67 @@ def main():
             candidate_items = [chosen_item]
             query = topic_item["topic"]
             target_streamer = actual_ch
-            category = "GTA 6 Stream"
+            category = "Curated"
             base_hook = topic_item["hook"]
         else:
             logger.error(f"Target video ID '{target_vid_override}' not found on YouTube.")
             sys.exit(1)
-    elif tgg_lock:
-        logger.info("🎯 TGG & MYTHPAT EXCLUSIVE DUO ACTIVE (All other topics paused until 12 Midnight IST)!")
-        
-        creators = [
-            {
-                "name": "Mythpat",
-                "channel_id": "UCx6F-rETGiz7xf_vkMmX2yQ",
-                "live_id": "LMbea5SozeM",
-                "live_title": "Welcome to Vice City! GTA 6 LIVE with Mythpat",
-                "category": "GTA 5",
-                "titles": [
-                    "MYTHPAT'S LAST RIDE IN GTA 5 🥺 #GTA5 #Shorts",
-                    "FAREWELL GTA 5 - MYTHPAT 🚗 #GTA5 #Shorts",
-                    "MYTHPAT ONE LAST RIDE IN GTA 5 ❤️ #GTA5 #Shorts",
-                    "MYTHPAT EMOTIONAL GTA 5 MOMENT 😭 #GTA5 #Shorts",
-                    "MYTHPAT GOODBYE GTA 5 🌴 #GTA5 #Shorts"
-                ]
-            },
-            {
-                "name": "TGG",
-                "channel_id": "UC72PuhDwKtZ5MikpGNhPAtA",
-                "live_id": "xMXp80Cntxw",
-                "live_title": "GTA 6 LAUNCH STREAM! Playing GTA 6 for the First Time",
-                "category": "GTA 6",
-                "titles": [
-                    "TGG PLAYS GTA 6 🔥 #GTA6 #Shorts",
-                    "TGG GTA 6 FIRST LOOK 🌴 #GTA6 #Shorts",
-                    "TGG ON GTA 6 GRAPHICS 🤯 #GTA6 #Shorts",
-                    "TGG CRAZY GTA 6 MOMENT 💥 #GTA6 #Shorts",
-                    "TGG DISCOVERS GTA 6 SECRET 🔍 #GTA6 #Shorts",
-                    "TGG REACTS TO GTA 6 🌴 #GTA6 #Shorts"
-                ]
-            }
-        ]
-
-        # Smart alternating rotation: Check recent uploads
-        # If last upload was TGG, pick Mythpat; if last upload was Mythpat, pick TGG!
-        last_was_tgg = any("tgg" in rt.lower() for rt in recent_titles[:3])
-        last_was_mythpat = any("mythpat" in rt.lower() for rt in recent_titles[:3])
-
-        if last_was_tgg and not last_was_mythpat:
-            selected_creator = creators[0]  # Mythpat
-        elif last_was_mythpat and not last_was_tgg:
-            selected_creator = creators[1]  # TGG
-        else:
-            selected_creator = random.choice(creators)
-
-        logger.info(f"Selected Creator for this run: {selected_creator['name']} (Channel ID: {selected_creator['channel_id']})")
-
-        cr_name = selected_creator["name"]
-        cr_channel_id = selected_creator["channel_id"]
-        cr_live_id = selected_creator["live_id"]
-        cr_live_title = selected_creator["live_title"]
-        category = selected_creator.get("category", "GTA 6")
-        cr_titles = selected_creator["titles"]
-
-        tgg_slices = [
-            "*00:03:30-00:04:05",
-            "*00:06:15-00:06:50",
-            "*00:09:00-00:09:35",
-            "*00:12:15-00:12:50",
-            "*00:15:30-00:16:05",
-            "*00:19:00-00:19:35"
-        ]
-        available_titles = [t for t in cr_titles if not any(t.lower()[:20] in rt for rt in recent_titles)]
-        base_hook = random.choice(available_titles) if available_titles else random.choice(cr_titles)
-        topic_item = {
-            "topic": f"{cr_name} {category} Stream",
-            "category": category,
-            "streamer": cr_name,
-            "slice": random.choice(tgg_slices),
-            "hook": base_hook
+    else:
+        # Multi-Category Rotation weighted per user request:
+        # 1. Indian Podcasts (BeerBiceps, Raj Shamani, Dostcast, RealHit) -> 25%
+        # 2. Indian Comedy (Samay Raina, Tanmay Bhat, Zakir Khan, Bassi) -> 20%
+        # 3. English Viral Podcasts & Comedy (Joe Rogan, Theo Von, Flagrant) -> 18%
+        # 4. Indian Ancient Mysteries (Kailash Temple, Padmanabhaswamy, Ram Setu) -> 15%
+        # 5. Sci-Fi & Cosmic Mysteries (James Webb, Black Holes, Multiverse) -> 12%
+        # 6. Kids & Curiosity Wonders (Megalodon, Dinosaurs, Deep Sea Animals) -> 10%
+        category_weights = {
+            "Indian Podcast": 0.25,
+            "Indian Comedy": 0.20,
+            "English Podcast": 0.18,
+            "Indian Mystery": 0.15,
+            "Sci-Fi": 0.12,
+            "Wonders": 0.10
         }
-        query = topic_item["topic"]
-        target_streamer = cr_name
+
+        all_pool = list(service.topics)
+        dedup_pool = []
+        seen_t = set()
+        for t in all_pool:
+            if t["topic"] not in seen_t:
+                seen_t.add(t["topic"])
+                dedup_pool.append(t)
 
         try:
-            search_res = youtube.search().list(
-                channelId=cr_channel_id,
-                part="snippet",
-                type="video",
-                order="date",
-                maxResults=10
-            ).execute()
-        except Exception as e:
-            logger.warning(f"{cr_name} Search notice: {e}")
-            search_res = None
-
-        candidate_items = []
-        if search_res and search_res.get("items"):
-            for it in search_res["items"]:
-                it["_streamer_verified"] = True
-                candidate_items.append(it)
-
-        # Always include active live stream as candidate
-        candidate_items.insert(0, {
-            "id": {"videoId": cr_live_id},
-            "snippet": {
-                "title": cr_live_title,
-                "channelTitle": cr_name
-            },
-            "_streamer_verified": True
-        })
-    else:
-        if mode in ["stream_only", "gta6_only"]:
-            logger.info("🎮 GTA 6 ALL-DAY STREAM SNIPER ACTIVE: Targeting Top Indian & Global Streamers!")
-            stream_pool = getattr(service, "GTA6_STREAM_TOPICS", service.topics)
-            unseen_pool = [t for t in stream_pool if not is_already_uploaded(t)]
-            if unseen_pool:
-                logger.info(f"Anti-duplicate filter: {len(unseen_pool)} unseen streamer topics available.")
-                topic_item = random.choice(unseen_pool)
+            available_cats = list(category_weights.keys())
+            weights = [category_weights[c] for c in available_cats]
+            chosen_cat = random.choices(available_cats, weights=weights, k=1)[0]
+            cat_topics = [t for t in dedup_pool if t.get("category") == chosen_cat]
+            unseen_cat = [t for t in cat_topics if not is_already_uploaded(t)]
+            if unseen_cat:
+                topic_item = random.choice(unseen_cat)
+            elif cat_topics:
+                topic_item = random.choice(cat_topics)
             else:
-                logger.info("All streamer topics used recently; cycling pool.")
-                topic_item = random.choice(stream_pool)
-        else:
-            # Default smart mix: 60% GTA 6 (Streamers + Viral Game Mechanics), 40% Podcasts / Sci-Fi / History / Wonders
-            category_weights = {
-                "GTA 6 Stream": 0.35,
-                "GTA 6": 0.25,
-                "Podcast": 0.15,
-                "Sci-Fi": 0.10,
-                "History": 0.10,
-                "Wonders": 0.05
-            }
-            all_pool = list(getattr(service, "GTA6_STREAM_TOPICS", [])) + list(service.topics)
-            dedup_pool = []
-            seen_t = set()
-            for t in all_pool:
-                if t["topic"] not in seen_t:
-                    seen_t.add(t["topic"])
-                    dedup_pool.append(t)
-
-            try:
-                available_cats = list(category_weights.keys())
-                weights = [category_weights[c] for c in available_cats]
-                chosen_cat = random.choices(available_cats, weights=weights, k=1)[0]
-                cat_topics = [t for t in dedup_pool if t.get("category") == chosen_cat]
-                unseen_cat = [t for t in cat_topics if not is_already_uploaded(t)]
-                if unseen_cat:
-                    topic_item = random.choice(unseen_cat)
-                elif cat_topics:
-                    topic_item = random.choice(cat_topics)
-                else:
-                    topic_item = random.choice(dedup_pool)
-            except Exception as e:
-                logger.warning(f"Selection fallback: {e}. Picking uniform topic.")
                 topic_item = random.choice(dedup_pool)
+        except Exception as e:
+            logger.warning(f"Selection fallback: {e}. Picking uniform topic.")
+            topic_item = random.choice(dedup_pool)
 
         query = topic_item["topic"]
         target_streamer = topic_item.get("streamer")
-        category = topic_item.get("category", "GTA 6")
+        category = topic_item.get("category", "Indian Podcast")
         base_hook = topic_item.get("hook", "WAIT FOR IT... 🤯")
 
-        logger.info(f"Targeting: '{query}' | Target Streamer: '{target_streamer}' | Category: '{category}'")
+        logger.info(f"Targeting Topic: '{query}' | Category: '{category}' | Hook: '{base_hook}'")
 
         search_query = f"{query} -#shorts -shorts"
         logger.info(f"Searching official YouTube API for full long-form video (16:9): '{search_query}'...")
         
         search_res = None
         query_candidates = [
-            f"{query} gameplay",
             query,
-            f"{' '.join(query.split()[:4])}",
-            f"{category} full walkthrough 1080p"
+            f"{query} official",
+            f"{' '.join(query.split()[:5])}"
         ]
         for q_cand in query_candidates:
             try:
@@ -451,8 +337,9 @@ def main():
         else:
             logger.warning(f"Video is by '{actual_channel}', NOT '{target_streamer}'. Deriving truthful hook & title!")
             clean_ch = "".join(c for c in actual_channel if c.isalnum() or c.isspace()).strip()
-            hook = f"{clean_ch.upper()[:20]} GTA REACTION 🔥"
-            upload_title = f"{clean_ch[:24]} Plays GTA 🎮 #Shorts"
+            hook = f"{clean_ch.upper()[:24]} 🔥"
+            tag = category.replace(" ", "")
+            upload_title = f"{hook} #{tag} #Shorts"
     else:
         hook = base_hook
         tag = category.replace(" ", "")
@@ -545,11 +432,24 @@ def main():
 
     # 6. Upload to YouTube Shorts
     from youtube_uploader import YouTubeUploader
+    category_tags = {
+        "Indian Podcast": ["#Podcast", "#IndianPodcast", "#BeerBiceps", "#RajShamani", "#Shorts", "#Viral", "#Trending"],
+        "Indian Comedy": ["#Comedy", "#IndianComedy", "#StandupComedy", "#SamayRaina", "#ZakirKhan", "#Shorts", "#Funny"],
+        "English Podcast": ["#Podcast", "#JoeRogan", "#TheoVon", "#Comedy", "#Shorts", "#ViralShorts"],
+        "Indian Mystery": ["#Mystery", "#IndianHistory", "#AncientIndia", "#KailashTemple", "#Secrets", "#Shorts"],
+        "Sci-Fi": ["#SciFi", "#Space", "#NASA", "#Universe", "#BlackHole", "#ScienceFacts", "#Shorts"],
+        "Wonders": ["#Wonders", "#AnimalFacts", "#Dinosaurs", "#DeepSea", "#Megalodon", "#Shorts"]
+    }
+    cur_tags = category_tags.get(category, ["#Shorts", f"#{category.replace(' ', '')}", "#Viral", "#Trending"])
+    clean_ch_tag = "".join(c for c in actual_channel if c.isalnum())
+    if clean_ch_tag and clean_ch_tag not in cur_tags:
+        cur_tags.append(clean_ch_tag)
+
     upload_res = YouTubeUploader.upload_short(
         video_path=rendered_video,
         title=upload_title,
-        description=f"{upload_title}\n\nCreator: {actual_channel}\nSource Video: {yt_url} [ID: {vid}]\nAuto-curated by ClipFlow AI.\n#Shorts #Viral #Gaming #{actual_channel.replace(' ', '')} #{category.replace(' ', '')}",
-        tags=["#Shorts", f"#{category.replace(' ', '')}", "#Gaming", "#Viral", "#Trending", actual_channel.replace(" ", "")],
+        description=f"{upload_title}\n\nCreator: {actual_channel}\nSource Video: {yt_url} [ID: {vid}]\nAuto-curated by ClipFlow AI.\n#Shorts #Viral #{category.replace(' ', '')} #{clean_ch_tag}",
+        tags=cur_tags,
         privacy_status="public",
         client_secrets_path=secret_file
     )
