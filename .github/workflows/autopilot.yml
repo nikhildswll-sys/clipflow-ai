@@ -32,6 +32,14 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y ffmpeg fonts-dejavu-core
 
+      - name: Setup Cloudflare WARP Client (Bypass Datacenter IP Bot Checks)
+        continue-on-error: true
+        timeout-minutes: 3
+        uses: fscarmen/warp-on-actions@v1.4
+        with:
+          stack: ipv4
+          mode: client
+
       - name: Install Python Packages
         timeout-minutes: 6
         run: |
