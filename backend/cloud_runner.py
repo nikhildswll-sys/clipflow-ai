@@ -557,9 +557,11 @@ def main():
     if upload_res.get("status") == "error":
         err_msg = upload_res.get("message", "")
         if "uploadLimitExceeded" in str(err_msg):
-            logger.warning("YouTube 24-hour daily upload quota reached. Job completed safely. Next run will upload once YouTube window unlocks.")
+            logger.error("[FATAL ERROR] YouTube 24-hour daily upload quota reached (uploadLimitExceeded).")
+            logger.error("YouTube enforces a 24-hour rolling cooldown. Failing job loudly so GitHub Actions shows red.")
         else:
-            logger.error(f"Upload error: {err_msg}")
+            logger.error(f"[FATAL ERROR] Upload failed: {err_msg}")
+        sys.exit(1)
     else:
         print("FINISHED_SUCCESSFULLY:", upload_res.get("video_url"))
 
