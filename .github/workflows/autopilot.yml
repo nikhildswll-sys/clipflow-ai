@@ -1,9 +1,9 @@
 name: 24/7 AutoPilot YouTube Shorts Bot
 
 on:
-  schedule:
-    - cron: '0 */4 * * *' # Automatically runs every 4 hours 24/7 on GitHub Cloud (even when laptop is OFF)
-  workflow_dispatch: # Allows manual trigger anytime from GitHub Actions tab
+  # schedule:
+  #   - cron: '0 */4 * * *' # DISABLED per user request
+  workflow_dispatch: # Manual only if needed
     inputs:
       video_id:
         description: 'Specific YouTube Video or Stream ID to clip'
